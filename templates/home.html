@@ -1,0 +1,67 @@
+
+{% extends 'base.html' %}
+{% block title %}Lavage Samy Auto{% endblock %}
+
+{% block content %}
+
+
+<div class="container my-5">
+  <!-- Section de bienvenue -->
+  <div class="text-center mb-5">
+    <br>
+    <br>
+     <h1>Le site est en cours de developement......</h1>
+      <br><br>
+    <h2 class="display-5 fw-bold">Bienvenue chez Lavage Samy Auto</h2>
+    <p class="lead">Votre solution moderne de gestion de station de lavage – rapide, claire, efficace.</p>
+  </div>
+
+  <!-- Cartes résumé des modèles -->
+  <div class="row g-4">
+    <!-- Carte Services -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">Services</h5>
+          <p class="card-text">Définissez vos prestations (ex : Lavage Complet) avec tarifs et commissions associées.</p>
+          <a href="{% url 'gestion:service_list' %}" class="btn btn-primary">Voir les services</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte Factures -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">Factures</h5>
+          <p class="card-text">Créez et gérez vos factures, suivez les paiements, commissions et statistiques.</p>
+          <a href="{% url 'gestion:facture_list' %}" class="btn btn-success">Voir les factures</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte Utilisateurs -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow">
+        <div class="card-body text-center">
+          <h5 class="card-title">Utilisateurs</h5>
+          <p class="card-text">Gérez les rôles : Caissiers, Laveurs, Admins et Superviseurs avec permissions dédiées.</p>
+          <a href="{% url 'admin:index' %}" class="btn btn-dark">Admin Django</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Objectifs -->
+  <div class="mt-5">
+    <h2>Plan de développement (1 mois)</h2>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Semaine 1 :</strong> Mise en place technique & modèles ✅ 🆗</li>
+      <li class="list-group-item"><strong>Semaine 2 :</strong> Gestion complète des factures ❌</li>
+      <li class="list-group-item"><strong>Semaine 3 :</strong> Statistiques & export PDF ❌</li>
+      <li class="list-group-item"><strong>Semaine 4 :</strong> Sécurité, tests & déploiement ❌</li>
+    </ul>
+  </div>
+</div>
+
+{% endblock %}

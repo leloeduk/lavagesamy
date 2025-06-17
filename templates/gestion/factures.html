@@ -1,0 +1,25 @@
+{% extends "gestion/base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Factures</h1>
+<div class="overflow-x-auto">
+    <table class="min-w-full bg-white">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Numéro</th>
+                <th class="py-2 px-4 border-b">Client</th>
+                <th class="py-2 px-4 border-b">Montant</th>
+                <th class="py-2 px-4 border-b">Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="py-2 px-4 border-b">#001</td>
+                <td class="py-2 px-4 border-b">Client A</td>
+                <td class="py-2 px-4 border-b">1000 XAF</td>
+                <td class="py-2 px-4 border-b">Payé</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

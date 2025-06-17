@@ -1,0 +1,23 @@
+{% extends "gestion/base.html" %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Utilisateurs</h1>
+<div class="overflow-x-auto">
+    <table class="min-w-full bg-white">
+        <thead>
+            <tr>
+                <th class="py-2 px-4 border-b">Nom Complet</th>
+                <th class="py-2 px-4 border-b">Rôle</th>
+                <th class="py-2 px-4 border-b">Téléphone</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="py-2 px-4 border-b">Utilisateur 1</td>
+                <td class="py-2 px-4 border-b">Admin</td>
+                <td class="py-2 px-4 border-b">123456789</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
