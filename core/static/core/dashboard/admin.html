@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4">
+    <h1 class="h2">Dashboard Administrateur</h1>
+    <p class="text-muted">Bienvenue, {{ user.get_full_name|default:user.username }}</p>
+</div>
+
+<div class="row">
+    <!-- Statistiques rapides -->
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Factures Aujourd'hui</h5>
+                <h2 class="card-stat">42</h2>
+                <p class="card-text">+15% vs hier</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Revenus Aujourd'hui</h5>
+                <h2 class="card-stat">1,250,000 FCFA</h2>
+                <p class="card-text">+8% vs hier</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Laveurs Actifs</h5>
+                <h2 class="card-stat">8</h2>
+                <p class="card-text">3 en pause</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-4">
+        <div class="card stat-card bg-warning text-dark">
+            <div class="card-body">
+                <h5 class="card-title">Factures Impayées</h5>
+                <h2 class="card-stat">5</h2>
+                <p class="card-text">Total: 75,000 FCFA</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Activité Récente</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>N° Facture</th>
+                                <th>Client</th>
+                                <th>Service</th>
+                                <th>Montant</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Exemple de données -->
+                            <tr>
+                                <td>FAC-2023-00125</td>
+                                <td>M. Diop</td>
+                                <td>Lavage Complet</td>
+                                <td>10,000 FCFA</td>
+                                <td><span class="badge bg-success">Payé</span></td>
+                            </tr>
+                            <!-- Plus de lignes... -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Actions Rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'facture-create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nouvelle Facture
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-people"></i> Gérer les Utilisateurs
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-graph-up"></i> Voir Statistiques
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                        <i class="bi bi-gear"></i> Paramètres
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

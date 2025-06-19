@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card shadow">
+        <div class="text-center mb-4">
+            <img src="{% static 'core/images/logo.png' %}" alt="Logo" class="auth-logo">
+            <h2 class="mt-3">Inscription</h2>
+        </div>
+
+        <form method="post" id="signupForm" class="auth-form">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_username" class="form-label">Nom d'utilisateur</label>
+                {{ form.username }}
+            </div>
+            <div class="mb-3">
+                <label for="id_email" class="form-label">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="mb-3">
+                <label for="id_nom_complet" class="form-label">Nom complet</label>
+                {{ form.nom_complet }}
+            </div>
+            <div class="mb-3">
+                <label for="id_role" class="form-label">Rôle</label>
+                {{ form.role }}
+            </div>
+            <div class="mb-3">
+                <label for="id_password1" class="form-label">Mot de passe</label>
+                {{ form.password1 }}
+            </div>
+            <div class="mb-4">
+                <label for="id_password2" class="form-label">Confirmer le mot de passe</label>
+                {{ form.password2 }}
+            </div>
+            <button type="submit" class="btn btn-primary w-100" id="signupBtn">
+                <span class="btn-text">S'inscrire</span>
+                <span class="spinner-border spinner-border-sm" id="signupSpinner" style="display:none;"></span>
+            </button>
+        </form>
+
+        <div class="auth-footer mt-3 text-center">
+            <p class="mb-0">Déjà un compte? <a href="{% url 'login' %}">Se connecter</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('signupForm').addEventListener('submit', function() {
+        const btn = document.getElementById('signupBtn');
+        const spinner = document.getElementById('signupSpinner');
+        const btnText = btn.querySelector('.btn-text');
+        
+        btn.disabled = true;
+        btnText.style.display = 'none';
+        spinner.style.display = 'inline-block';
+    });
+</script>
+{% endblock %}

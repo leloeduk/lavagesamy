@@ -1,0 +1,152 @@
+/* Styles de base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+:root {
+    --primary-blue: #0a2d5a;    /* Bleu marine du logo */
+    --accent-red: #e63946;      /* Rouge vif pour les accents */
+    --light-blue: #a8dadc;      /* Bleu clair pour les effets */
+    --pure-white: #ffffff;      /* Blanc pur */
+}
+
+
+/* Cartes */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.stat-card {
+    border-left: 4px solid;
+}
+
+.card-stat {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Boutons */
+.btn {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+/* Tableaux */
+.table {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+/* Formulaires */
+.form-control, .form-select {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+}
+
+/* Layout */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Spinner */
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-stat {
+        font-size: 1.5rem;
+    }
+}
+
+
+/* Navbar - Adaptation avec le bleu marine */
+.navbar.bg-primary {
+    background-color: var(--primary-blue) !important;
+    border-bottom: 2px solid var(--accent-red); /* Bordure rouge pour contraste */
+}
+
+/* Liens de la navbar */
+.nav-link {
+    color: var(--pure-white) !important;
+    transition: all 0.3s;
+}
+.nav-link:hover, .nav-link.active {
+    color: var(--light-blue) !important;
+    transform: translateY(-2px);
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    background-color: var(--primary-blue);
+    border: 1px solid var(--accent-red);
+}
+.dropdown-item {
+    color: var(--pure-white);
+}
+.dropdown-item:hover {
+    background-color: var(--accent-red);
+    color: var(--pure-white);
+}
+
+/* Footer - Style coordonné */
+footer {
+    background-color: var(--primary-blue) !important;
+    color: var(--pure-white) !important;
+}
+footer a {
+    color: var(--light-blue);
+}
+footer a:hover {
+    color: var(--accent-red);
+}
+
+/* Boutons et interactions */
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--accent-red);
+}
+.btn-primary:hover {
+    background-color: var(--accent-red);
+}

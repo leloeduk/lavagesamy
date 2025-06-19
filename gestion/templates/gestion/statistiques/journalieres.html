@@ -1,0 +1,186 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Statistiques Journalières{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Statistiques Journalières</h1>
+    <div class="d-flex">
+        <input type="date" class="form-control me-2" id="dateFilter" value="{{ today|date:'Y-m-d' }}">
+        <button class="btn btn-outline-secondary" onclick="printReport()">
+            <i class="bi bi-printer"></i> Imprimer
+        </button>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Nombre de Factures</h5>
+                <h2 class="card-stat">24</h2>
+                <p class="text-muted">+3 vs hier</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Revenu Total</h5>
+                <h2 class="card-stat">240,000 FCFA</h2>
+                <p class="text-muted">+12% vs hier</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <h5 class="card-title">Commission Totale</h5>
+                <h2 class="card-stat">72,000 FCFA</h2>
+                <p class="text-muted">30% du revenu</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Répartition par Service</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="serviceChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Performance des Laveurs</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="laveurChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Détail des Factures</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>N° Facture</th>
+                        <th>Heure</th>
+                        <th>Client</th>
+                        <th>Service</th>
+                        <th>Laveur</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Données factures du jour -->
+                    <tr>
+                        <td>FAC-2023-00125</td>
+                        <td>08:30</td>
+                        <td>M. Diop</td>
+                        <td>Lavage Complet</td>
+                        <td>Abdoulaye Ndiaye</td>
+                        <td>10,000 FCFA</td>
+                        <td><span class="badge bg-success">Payé</span></td>
+                    </tr>
+                    <!-- Plus de lignes... -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function printReport() {
+    window.print();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart.js configuration
+    const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+    const laveurCtx = document.getElementById('laveurChart').getContext('2d');
+    
+    // Service Chart
+    new Chart(serviceCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Lavage Complet', 'Lavage Intérieur', 'Lavage Extérieur', 'Nettoyage Sièges'],
+            datasets: [{
+                data: [12, 5, 4, 3],
+                backgroundColor: [
+                    '#4e73df',
+                    '#1cc88a',
+                    '#36b9cc',
+                    '#f6c23e'
+                ],
+                hoverBackgroundColor: [
+                    '#2e59d9',
+                    '#17a673',
+                    '#2c9faf',
+                    '#dda20a'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+    
+    // Laveur Chart
+    new Chart(laveurCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Abdoulaye N.', 'Moussa S.', 'Fatou D.', 'Ibrahima K.', 'Aminata B.'],
+            datasets: [{
+                label: 'Nombre de services',
+                data: [8, 6, 5, 3, 2],
+                backgroundColor: '#4e73df',
+                hoverBackgroundColor: '#2e59d9',
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    
+    // Date filter
+    document.getElementById('dateFilter').addEventListener('change', function() {
+        const selectedDate = this.value;
+        // Ici vous devriez recharger les données avec la date sélectionnée
+        console.log('Date sélectionnée:', selectedDate);
+        // Exemple: window.location.href = `{% url 'stats-journalieres' %}?date=${selectedDate}`;
+    });
+});
+</script>
+{% endblock %}

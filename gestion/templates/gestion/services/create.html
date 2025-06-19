@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Créer un Service{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-plus-circle"></i> Nouveau Service</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}">Nom du Service</label>
+                            {{ form.nom }}
+                            <small class="form-text text-muted">Ex: Lavage Intérieur Premium</small>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.prix_total.id_for_label }}">Prix Total (FCFA)</label>
+                                {{ form.prix_total }}
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.commission_laveur.id_for_label }}">Commission Laveur (FCFA)</label>
+                                {{ form.commission_laveur }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            <a href="{% url 'gestion:service-list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'gestion',  # ton app
+    'core',
     "crispy_forms",
     "crispy_bootstrap5",
     'django_filters',
@@ -59,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'lavagesamy.urls'
@@ -66,7 +69,7 @@ ROOT_URLCONF = 'lavagesamy.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+       'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -89,6 +92,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+    # 'default': dj_database_url.parse(config('DATABASE_URL')),
+
     #  'default': {
     #     'ENGINE': 'django.db.backends.postgresql',
     #     'NAME': 'lavagesamydb',
@@ -131,27 +136,42 @@ USE_I18N = True
 USE_TZ = True
 
 
+AUTH_USER_MODEL = 'gestion.User'
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
+
+# Configurer l'envoi d'emails (pour la réinitialisation de mot de passe)
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.votre-fournisseur.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'votre@email.com'
+# EMAIL_HOST_PASSWORD = 'votre-mot-de-passe'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 
 # Fichiers statiques
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# Si vos fichiers statiques sont dans un dossier `static/` à la racine
 # Remplacer
 # STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Par (si vous voulez ignorer ce dossier)
 # STATICFILES_DIRS = []
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # Pour le développement
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')    # Pour la production
 
 # Médias (futurs PDF ou fichiers uploadés)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Utilisateur personnalisé
-AUTH_USER_MODEL = 'gestion.User'
+AUTH_USER_MODEL = 'core.User'
 
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"

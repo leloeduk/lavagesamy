@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Services{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-concierge-bell"></i> Liste des Services</h2>
+        </div>
+        <div class="col-md-6 text-right">
+            <a href="{% url 'gestion:service-create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouveau Service
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Nom</th>
+                            <th>Prix (FCFA)</th>
+                            <th>Commission Laveur</th>
+                            <th>Part Entreprise</th>
+                            <th>Créé le</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in services %}
+                        <tr>
+                            <td>{{ service.nom }}</td>
+                            <td>{{ service.prix_total|floatformat:0 }}</td>
+                            <td>{{ service.commission_laveur|floatformat:0 }}</td>
+                          <td>
+    <span id="part-entreprise-{{ service.id }}">
+        {{ service.prix_total|floatformat:0 }}
+    </span>
+    <!-- <script>
+        document.getElementById('part-entreprise-{{ service.id }}').textContent =
+            { service.prix_total } - { service.commission_laveur };
+    </script> -->
+</td>
+                            <td>{{ service.date_creation|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-info" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Aucun service enregistré</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

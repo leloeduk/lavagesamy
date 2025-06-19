@@ -1,122 +1,218 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-from django.db.models import Sum, Count
-from .models import Facture, Service, User
+from .models import Facture, Service
+from core.models import User
 from .forms import FactureForm, ServiceForm
+from core.forms import CustomUserCreationForm
+from django.views.generic import TemplateView
+from django.utils import timezone
+from django.db.models import Sum, Count
+from datetime import timedelta
+# from django.db.models import Q
+from django.utils.timezone import now
 
-def home(request):
-    """Vue pour la page d'accueil publique"""
-    return render(request, 'home.html')
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'gestion/dashboard/dashboard.html'
+    
+    def get_date_ranges(self):
+        """Helper method to generate date ranges for statistics"""
+        today = timezone.now().date()
+        return {
+            'today': today,
+            'week_ago': today - timedelta(days=7),
+            'month_ago': today - timedelta(days=30),
+            'year_ago': today - timedelta(days=365),
+        }
 
-@login_required
-def service_list(request):
-    """Liste tous les services disponibles"""
-    services = Service.objects.all().order_by('nom')
-    return render(request, 'gestion/service_list.html', {'services': services})
+    def get_period_comparison(self, current_period_data, previous_period_data, field):
+        """Calculate percentage change between periods"""
+        current = current_period_data.get(field, 0) or 0
+        previous = previous_period_data.get(field, 0) or 0
+        if previous == 0:
+            return 0
+        return ((current - previous) / previous) * 100
 
-@login_required
-def facture_list(request):
-    """Affiche la liste de toutes les factures"""
-    factures = Facture.objects.select_related('auteur', 'service', 'laveur').order_by('-date_heure')
-    return render(request, 'gestion/factures/facture_list.html', {'factures': factures})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        dates = self.get_date_ranges()
+        
+        # Base querysets
+        factures = Facture.objects.select_related('service', 'laveur', 'auteur')
+        services = Service.objects.all()
+        
+        # Current period stats
+        current_month = now().month
+        current_year = now().year
+        
+        # Performance metrics
+        context.update({
+            # Real-time counts
+            'factures_count': factures.count(),
+            'services_count': services.count(),
+            
+            # Financial totals
+            'total_encaisse': factures.aggregate(
+                total=Sum('montant_total')
+            )['total'] or 0,
+            'total_commissions': factures.aggregate(
+                total=Sum('commission_laveur')
+            )['total'] or 0,
+            'benefice_net': factures.aggregate(
+                net=Sum('montant_total') - Sum('commission_laveur')
+            )['net'] or 0,
+            
+            # Recent activity
+            'recent_factures': factures.order_by('-date_heure')[:5],
+            'pending_factures': factures.filter(
+                statut='en_cours'
+            ).count(),
+            
+            # Status distribution
+            'facture_status_distribution': self.get_status_distribution(factures),
+            
+            # Payment method distribution
+            'payment_method_distribution': self.get_payment_method_distribution(factures),
+        })
+        
+        # Time-based comparisons
+        monthly_stats = self.get_monthly_stats(factures, current_year)
+        context['monthly_stats'] = monthly_stats
+        context['current_month_stats'] = next(
+            (m for m in monthly_stats if m['month'] == f"{current_year}-{current_month:02d}"),
+            {}
+        )
+        
+        return context
 
-@login_required
-def facture_detail(request, pk):
-    """Vue détaillée d'une facture spécifique"""
-    facture = get_object_or_404(Facture.objects.select_related('auteur', 'service', 'laveur'), pk=pk)
+    def get_status_distribution(self, factures):
+        """Get count of factures by status"""
+        return (
+            factures.values('statut')
+            .annotate(count=Count('id'))
+            .order_by('-count')
+        )
 
-    if not (request.user == facture.auteur or request.user.is_superuser):
-        messages.error(request, "Vous n'avez pas accès à cette facture.")
-        return redirect('gestion:facture_list')
+    def get_payment_method_distribution(self, factures):
+        """Get count of factures by payment method"""
+        return (
+            factures.values('mode_paiement')
+            .annotate(count=Count('id'), total=Sum('montant_total'))
+            .order_by('-total')
+        )
 
-    return render(request, 'gestion/factures/facture_detail.html', {
-        'facture': facture,
-        'can_edit': request.user == facture.auteur or request.user.is_superuser
-    })
+    def get_monthly_stats(self, factures, current_year):
+        """Generate monthly statistics for the current year"""
+        monthly_stats = []
+        
+        for month in range(1, 13):
+            month_data = factures.filter(
+                date_heure__year=current_year,
+                date_heure__month=month
+            ).aggregate(
+                count=Count('id'),
+                total=Sum('montant_total'),
+                commissions=Sum('commission_laveur'),
+            )
+            
+            monthly_stats.append({
+                'month': f"{current_year}-{month:02d}",
+                'count': month_data['count'] or 0,
+                'total': month_data['total'] or 0,
+                'commissions': month_data['commissions'] or 0,
+                'profit': (month_data['total'] or 0) - (month_data['commissions'] or 0),
+            })
+        
+        return monthly_stats
 
-@login_required
-def facture_create(request):
-    """Crée une nouvelle facture"""
-    if request.method == 'POST':
-        form = FactureForm(request.POST)
-        if form.is_valid():
-            try:
-                facture = form.save(commit=False)
-                facture.auteur = request.user
-                service = facture.service
+# === Factures ===
+class FactureListView(LoginRequiredMixin, ListView):
+    model = Facture
+    template_name = 'gestion/factures/list.html'
+    context_object_name = 'factures'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filtrage par statut
+        statut = self.request.GET.get('statut')
+        if statut:
+            queryset = queryset.filter(statut=statut)
+            
+        # Filtrage par laveur (pour les superviseurs/laveurs)
+        if self.request.user.role in ['laveur', 'superviseur']:
+            queryset = queryset.filter(laveur=self.request.user)
+            
+        return queryset.select_related('service', 'laveur', 'auteur')
 
-                # Calculs financiers automatiques
-                facture.montant_total = service.prix_total
-                facture.commission_laveur = service.commission_laveur
-                facture.part_entreprise = service.prix_total - service.commission_laveur
+class FactureCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Facture
+    form_class = FactureForm
+    template_name = 'gestion/factures/create.html'
+    success_url = '/gestion/factures/'
 
-                # Génération du numéro de facture incrémental
-                last_facture = Facture.objects.order_by('-id').first()
-                new_id = last_facture.id + 1 if last_facture else 1
-                facture.numero_facture = f"FAC{new_id:04}"
+    def test_func(self):
+        return self.request.user.role in ['admin', 'caissier']
+    
+    def form_valid(self, form):
+        form.instance.auteur = self.request.user
+        form.instance.montant_total = form.instance.service.prix_total
+        form.instance.commission_laveur = form.instance.service.commission_laveur
+        messages.success(self.request, "Facture créée avec succès!")
+        return super().form_valid(form)
+class FactureDetailView(DetailView):
+    model = Facture
+    template_name = 'gestion/factures/detail.html'     
 
-                facture.save()
-                messages.success(request, "Facture créée avec succès.")
-                return redirect('gestion:facture_list')
+# === Services ===
+class ServiceListView(LoginRequiredMixin, ListView):
+    model = Service
+    template_name = 'gestion/services/list.html'
+    context_object_name = 'services'
 
-            except Exception as e:
-                messages.error(request, f"Erreur lors de la création : {str(e)}")
-    else:
-        form = FactureForm()
+class ServiceCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Service
+    form_class = ServiceForm
+    template_name = 'gestion/services/create.html'
+    success_url = '/gestion/services/'
+    
+    def test_func(self):
+        return self.request.user.role == 'admin'
 
-    return render(request, 'gestion/factures/facture_form.html', {'form': form})
+# === Statistiques ===
+class StatistiquesMensuellesView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Facture
+    template_name = 'gestion/statistiques/mensuelles.html'
+    
+    def test_func(self):
+        return self.request.user.role in ['admin', 'superviseur']
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Ajoutez ici vos calculs de statistiques
+        return context
 
-@login_required
-def dashboard_view(request):
-    """Tableau de bord avec statistiques principales"""
-    stats = {
-        'total_factures': Facture.objects.count(),
-        'montant_total': Facture.objects.aggregate(total=Sum('montant_total'))['total'] or 0,
-        'total_clients': Facture.objects.exclude(nom_client='').values('nom_client').distinct().count(),
-        'total_laveurs': User.objects.filter(role='laveur').count(),
-        'factures_recent': Facture.objects.select_related('service', 'laveur').order_by('-date_heure')[:10]
-    }
-    return render(request, 'dashboard.html', stats)
+# === Utilisateurs ===
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = User
+    template_name = 'gestion/utilisateurs/list.html'
+    context_object_name = 'users'
+    
+    def test_func(self):
+        return self.request.user.role == 'admin'
 
-@login_required
-@user_passes_test(lambda u: u.is_superuser or u.role == 'admin')
-def service_create(request):
-    """Création d'un nouveau service"""
-    if request.method == 'POST':
-        form = ServiceForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Service créé avec succès.")
-            return redirect('gestion:service_list')
-    else:
-        form = ServiceForm()
-
-    return render(request, 'gestion/services/service_form.html', {'form': form})
-
-@login_required
-def service_update(request, pk):
-    """Modification d'un service existant"""
-    service = get_object_or_404(Service, pk=pk)
-    if request.method == 'POST':
-        form = ServiceForm(request.POST, instance=service)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Service mis à jour avec succès.")
-            return redirect('gestion:service_list')
-    else:
-        form = ServiceForm(instance=service)
-
-    return render(request, 'gestion/services/service_form.html', {'form': form, 'service': service})
-
-@login_required
-@user_passes_test(lambda u: u.is_superuser)
-def service_delete(request, pk):
-    """Suppression d'un service"""
-    service = get_object_or_404(Service, pk=pk)
-    if request.method == 'POST':
-        service.delete()
-        messages.success(request, "Service supprimé avec succès.")
-        return redirect('gestion:service_list')
-
-    return render(request, 'gestion/services/confirm_delete.html', {'object': service})
+class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = User
+    form_class = CustomUserCreationForm
+    template_name = 'gestion/utilisateurs/create.html'
+    success_url = reverse_lazy('utilisateur-list')
+    
+    def test_func(self):
+        return self.request.user.role == 'admin'
+    
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Utilisateur créé avec succès!")
+        return response

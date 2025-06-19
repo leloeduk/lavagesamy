@@ -1,0 +1,128 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Gestion des Utilisateurs</h1>
+    <a href="{% url 'utilisateur-create' %}" class="btn btn-primary">
+        <i class="bi bi-plus"></i> Nouvel Utilisateur
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Liste des Utilisateurs</h5>
+        <div class="d-flex">
+            <input type="text" class="form-control me-2" placeholder="Rechercher..." id="searchInput">
+            <select class="form-select" id="roleFilter">
+                <option value="">Tous les rôles</option>
+                <option value="Admin">Admin</option>
+                <option value="Caissier">Caissier</option>
+                <option value="Laveur">Laveur</option>
+                <option value="Superviseur">Superviseur</option>
+            </select>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Nom Complet</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>Email</th>
+                        <th>Rôle</th>
+                        <th>Téléphone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.get_full_name }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if user.role == 'Admin' %}bg-danger
+                                {% elif user.role == 'Superviseur' %}bg-warning text-dark
+                                {% elif user.role == 'Caissier' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>{{ user.telephone|default:"-" }}</td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-outline-primary" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-sm btn-outline-danger" title="Supprimer" data-bs-toggle="modal" data-bs-target="#deleteModal{{ user.id }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% for user in users %}
+<!-- Modal Suppression -->
+<div class="modal fade" id="deleteModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmer la Suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer l'utilisateur <strong>{{ user.get_full_name }}</strong>?</p>
+                <p class="text-danger">Cette action est irréversible!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <form method="post" action="{% url 'utilisateur-delete' user.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtrage des utilisateurs
+    const searchInput = document.getElementById('searchInput');
+    const roleFilter = document.getElementById('roleFilter');
+    const table = document.getElementById('usersTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    function filterTable() {
+        const searchText = searchInput.value.toLowerCase();
+        const roleValue = roleFilter.value;
+        
+        for (let row of rows) {
+            const cells = row.getElementsByTagName('td');
+            const rowText = row.textContent.toLowerCase();
+            const roleCell = cells[3].textContent.trim();
+            
+            const matchesSearch = searchText === '' || rowText.includes(searchText);
+            const matchesRole = roleValue === '' || roleCell === roleValue;
+            
+            row.style.display = matchesSearch && matchesRole ? '' : 'none';
+        }
+    }
+    
+    searchInput.addEventListener('keyup', filterTable);
+    roleFilter.addEventListener('change', filterTable);
+});
+</script>
+{% endblock %}

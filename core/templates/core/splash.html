@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="splash-screen d-flex flex-column justify-content-center align-items-center vh-100">
+    <div class="splash-content text-center">
+        <img src="{% static 'core/images/logo.png' %}" alt="Logo Lavage Samy Auto" class="splash-logo mb-4">
+        <h1 class="display-4 mb-3">Lavage Samy Auto</h1>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .splash-screen {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .splash-logo {
+        width: 150px;
+        height: 150px;
+        object-fit: contain;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>
+
+<script>
+    setTimeout(function() {
+        window.location.href = "{% url 'login' %}";
+    }, 3000);
+</script>
+{% endblock %}

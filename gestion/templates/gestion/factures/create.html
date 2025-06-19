@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Créer une Facture{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-file-invoice"></i> Nouvelle Facture</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="factureForm">
+                        {% csrf_token %}
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.numero_facture.id_for_label }}">Numéro Facture</label>
+                                {{ form.numero_facture }}
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.nom_client.id_for_label }}">Nom Client (Optionnel)</label>
+                                {{ form.nom_client }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.service.id_for_label }}">Service</label>
+                                {{ form.service }}
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.laveur.id_for_label }}">Laveur</label>
+                                {{ form.laveur }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label for="{{ form.montant_total.id_for_label }}">Montant Total</label>
+                                <div class="input-group">
+                                    {{ form.montant_total }}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">FCFA</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label for="{{ form.commission_laveur.id_for_label }}">Commission Laveur</label>
+                                <div class="input-group">
+                                    {{ form.commission_laveur }}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">FCFA</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Part Entreprise</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="part_entreprise" readonly 
+                                           value="{{ form.instance.part_entreprise|default:0 }}">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">FCFA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.mode_paiement.id_for_label }}">Mode de Paiement</label>
+                                {{ form.mode_paiement }}
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="{{ form.statut.id_for_label }}">Statut</label>
+                                {{ form.statut }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="{{ form.commentaire.id_for_label }}">Commentaire</label>
+                            {{ form.commentaire }}
+                        </div>
+                        
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                            <a href="{% url 'gestion:facture-list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                            
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+    // Calcul automatique de la part entreprise
+    function calculatePart() {
+        const montant = parseFloat($('#id_montant_total').val()) || 0;
+        const commission = parseFloat($('#id_commission_laveur').val()) || 0;
+        const part = montant - commission;
+        $('#part_entreprise').val(part.toFixed(2));
+    }
+    
+    $('#id_montant_total, #id_commission_laveur').on('input', calculatePart);
+    
+    // Pré-remplir le montant et la commission quand un service est sélectionné
+    $('#id_service').change(function() {
+        const serviceId = $(this).val();
+        if (serviceId) {
+            $.get(`/api/services/${serviceId}/`, function(data) {
+                $('#id_montant_total').val(data.prix_total);
+                $('#id_commission_laveur').val(data.commission_laveur);
+                calculatePart();
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

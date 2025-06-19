@@ -1,23 +1,27 @@
 from django.urls import path
 from . import views
 
-app_name = 'gestion'  # Namespace pour l'application
+app_name = 'gestion'
 
 urlpatterns = [
-    # Page d'accueil
-    path('', views.home, name='home'),
 
-    # Dashboard
-    path('dashboard/', views.dashboard_view, name='dashboard'),
-
+    # dashbord 
+   path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
+    
     # Factures
-    path('factures/', views.facture_list, name='facture_list'),
-    path('factures/creer/', views.facture_create, name='facture_create'),
-    path('factures/<int:pk>/', views.facture_detail, name='facture_detail'),
-
+    path('factures/', views.FactureListView.as_view(), name='facture-list'),
+    path('factures/nouvelle/', views.FactureCreateView.as_view(), name='facture-create'),
+    path('factures/<int:pk>/', views.FactureDetailView.as_view(), name='facture-detail'),
+  
     # Services
-    path('services/', views.service_list, name='service_list'),
-    path('services/creer/', views.service_create, name='service_create'),
-    path('services/<int:pk>/modifier/', views.service_update, name='service_update'),
-    path('services/<int:pk>/supprimer/', views.service_delete, name='service_delete'),
+    path('services/', views.ServiceListView.as_view(), name='service-list'),
+    path('services/nouveau/', views.ServiceCreateView.as_view(), name='service-create'),
+   
+    # Statistiques
+    path('statistiques/mensuelles/', views.StatistiquesMensuellesView.as_view(), name='stats-mensuelles'),
+    
+    # Utilisateurs
+    path('utilisateurs/', views.UserListView.as_view(), name='utilisateur-list'),
+    path('utilisateurs/nouveau/', views.UserCreateView.as_view(), name='utilisateur-create'),
+   
 ]
