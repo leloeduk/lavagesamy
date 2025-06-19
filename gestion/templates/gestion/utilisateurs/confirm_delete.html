@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Confirmer la suppression{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>Supprimer l'utilisateur "{{ object.username }}" ?</h3>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Confirmer</button>
+        <a href="{% url 'gestion:utilisateur-list' %}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}

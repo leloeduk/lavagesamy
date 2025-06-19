@@ -1,48 +1,69 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 
 {% block title %}Créer un Service{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0"><i class="fas fa-plus-circle"></i> Nouveau Service</h3>
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    <h3 class="mb-0">Nouveau Service</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" novalidate>
                         {% csrf_token %}
                         
-                        <div class="form-group">
-                            <label for="{{ form.nom.id_for_label }}">Nom du Service</label>
-                            {{ form.nom }}
-                            <small class="form-text text-muted">Ex: Lavage Intérieur Premium</small>
+                        <!-- Nom du service -->
+                        <div class="mb-3">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label fw-semibold">Nom du Service</label>
+                            {% render_field form.nom class="form-control" placeholder="Ex: Lavage Intérieur Premium" %}
+                            {% if form.nom.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.nom.errors|striptags }}
+                                </div>
+                            {% else %}
+                                <div class="form-text">Ex: Lavage Intérieur Premium</div>
+                            {% endif %}
                         </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.prix_total.id_for_label }}">Prix Total (FCFA)</label>
-                                {{ form.prix_total }}
+
+                        <!-- Prix total et Commission laveur en ligne -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.prix_total.id_for_label }}" class="form-label fw-semibold">Prix Total (FCFA)</label>
+                                {% render_field form.prix_total class="form-control" placeholder="10000" %}
+                                {% if form.prix_total.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.prix_total.errors|striptags }}</div>
+                                {% endif %}
                             </div>
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.commission_laveur.id_for_label }}">Commission Laveur (FCFA)</label>
-                                {{ form.commission_laveur }}
+                            <div class="col-md-6">
+                                <label for="{{ form.commission_laveur.id_for_label }}" class="form-label fw-semibold">Commission Laveur (FCFA)</label>
+                                {% render_field form.commission_laveur class="form-control" placeholder="2000" %}
+                                {% if form.commission_laveur.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.commission_laveur.errors|striptags }}</div>
+                                {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="{{ form.description.id_for_label }}">Description</label>
-                            {{ form.description }}
+
+                        <!-- Description -->
+                        <div class="mb-3 mt-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-semibold">Description</label>
+                            {% render_field form.description class="form-control" placeholder="Détaillez le service proposé" rows="4" %}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">{{ form.description.errors|striptags }}</div>
+                            {% endif %}
                         </div>
-                        
-                        <div class="form-group text-right">
+
+                        <!-- Boutons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'gestion:service-list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Enregistrer
                             </button>
-                            <a href="{% url 'gestion:service-list' %}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
-                            </a>
                         </div>
                     </form>
                 </div>

@@ -21,7 +21,10 @@ urlpatterns = [
     path('statistiques/mensuelles/', views.StatistiquesMensuellesView.as_view(), name='stats-mensuelles'),
     
     # Utilisateurs
-    path('utilisateurs/', views.UserListView.as_view(), name='utilisateur-list'),
+     path('utilisateurs/', views.UserListView.as_view(), name='utilisateur-list'),
     path('utilisateurs/nouveau/', views.UserCreateView.as_view(), name='utilisateur-create'),
-   
+    path('utilisateurs/<int:pk>/', views.UserDetailView.as_view(), name='utilisateur-detail'),
+    path('utilisateurs/<int:pk>/modifier/', views.UserCreateView.as_view(), name='utilisateur-update'),
+    path('utilisateurs/<int:pk>/supprimer/', views.UserDeleteView.as_view(), name='utilisateur-delete'),
+
 ]

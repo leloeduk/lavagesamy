@@ -136,7 +136,8 @@ USE_I18N = True
 USE_TZ = True
 
 
-AUTH_USER_MODEL = 'gestion.User'
+AUTH_USER_MODEL = 'core.User'  # si ton modèle est dans core/models.py
+
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'

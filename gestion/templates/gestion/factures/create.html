@@ -1,96 +1,123 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
 
 {% block title %}Créer une Facture{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0"><i class="fas fa-file-invoice"></i> Nouvelle Facture</h3>
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex align-items-center">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    <h3 class="mb-0">Nouvelle Facture</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post" id="factureForm">
+                    <form method="post" id="factureForm" novalidate>
                         {% csrf_token %}
                         
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.numero_facture.id_for_label }}">Numéro Facture</label>
-                                {{ form.numero_facture }}
+                        <!-- Numéro facture et Nom client -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.numero_facture.id_for_label }}" class="form-label fw-semibold">Numéro Facture</label>
+                                {% render_field form.numero_facture class="form-control" placeholder="Ex: F2025001" %}
+                                {% if form.numero_facture.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.numero_facture.errors|striptags }}</div>
+                                {% endif %}
                             </div>
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.nom_client.id_for_label }}">Nom Client (Optionnel)</label>
-                                {{ form.nom_client }}
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.service.id_for_label }}">Service</label>
-                                {{ form.service }}
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.laveur.id_for_label }}">Laveur</label>
-                                {{ form.laveur }}
+                            <div class="col-md-6">
+                                <label for="{{ form.nom_client.id_for_label }}" class="form-label fw-semibold">Nom Client (Optionnel)</label>
+                                {% render_field form.nom_client class="form-control" placeholder="Nom du client" %}
+                                {% if form.nom_client.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.nom_client.errors|striptags }}</div>
+                                {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group col-md-4">
-                                <label for="{{ form.montant_total.id_for_label }}">Montant Total</label>
+
+                        <!-- Service et Laveur -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.service.id_for_label }}" class="form-label fw-semibold">Service</label>
+                                {% render_field form.service class="form-select" %}
+                                {% if form.service.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.service.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.laveur.id_for_label }}" class="form-label fw-semibold">Laveur</label>
+                                {% render_field form.laveur class="form-select" %}
+                                {% if form.laveur.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.laveur.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Montant, Commission, Part entreprise -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="{{ form.montant_total.id_for_label }}" class="form-label fw-semibold">Montant Total</label>
                                 <div class="input-group">
-                                    {{ form.montant_total }}
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">FCFA</span>
-                                    </div>
+                                    {% render_field form.montant_total class="form-control" placeholder="10000" %}
+                                    <span class="input-group-text">FCFA</span>
+                                </div>
+                                {% if form.montant_total.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.montant_total.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="{{ form.commission_laveur.id_for_label }}" class="form-label fw-semibold">Commission Laveur</label>
+                                <div class="input-group">
+                                    {% render_field form.commission_laveur class="form-control" placeholder="2000" %}
+                                    <span class="input-group-text">FCFA</span>
+                                </div>
+                                {% if form.commission_laveur.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.commission_laveur.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label for="part_entreprise" class="form-label fw-semibold">Part Entreprise</label>
+                                <div class="input-group">
+                                    <input type="text" readonly class="form-control" id="part_entreprise" value="{{ form.instance.part_entreprise|default:0 }}">
+                                    <span class="input-group-text">FCFA</span>
                                 </div>
                             </div>
-                            <div class="form-group col-md-4">
-                                <label for="{{ form.commission_laveur.id_for_label }}">Commission Laveur</label>
-                                <div class="input-group">
-                                    {{ form.commission_laveur }}
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">FCFA</span>
-                                    </div>
-                                </div>
+                        </div>
+
+                        <!-- Mode paiement et Statut -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.mode_paiement.id_for_label }}" class="form-label fw-semibold">Mode de Paiement</label>
+                                {% render_field form.mode_paiement class="form-select" %}
+                                {% if form.mode_paiement.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.mode_paiement.errors|striptags }}</div>
+                                {% endif %}
                             </div>
-                            <div class="form-group col-md-4">
-                                <label>Part Entreprise</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="part_entreprise" readonly 
-                                           value="{{ form.instance.part_entreprise|default:0 }}">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">FCFA</span>
-                                    </div>
-                                </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.statut.id_for_label }}" class="form-label fw-semibold">Statut</label>
+                                {% render_field form.statut class="form-select" %}
+                                {% if form.statut.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.statut.errors|striptags }}</div>
+                                {% endif %}
                             </div>
                         </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.mode_paiement.id_for_label }}">Mode de Paiement</label>
-                                {{ form.mode_paiement }}
-                            </div>
-                            <div class="form-group col-md-6">
-                                <label for="{{ form.statut.id_for_label }}">Statut</label>
-                                {{ form.statut }}
-                            </div>
+
+                        <!-- Commentaire -->
+                        <div class="mb-3">
+                            <label for="{{ form.commentaire.id_for_label }}" class="form-label fw-semibold">Commentaire</label>
+                            {% render_field form.commentaire class="form-control" rows="3" placeholder="Commentaire supplémentaire (optionnel)" %}
+                            {% if form.commentaire.errors %}
+                                <div class="invalid-feedback d-block">{{ form.commentaire.errors|striptags }}</div>
+                            {% endif %}
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="{{ form.commentaire.id_for_label }}">Commentaire</label>
-                            {{ form.commentaire }}
-                        </div>
-                        
-                        <div class="form-group text-right">
+
+                        <!-- Boutons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'gestion:facture-list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save"></i> Enregistrer
                             </button>
-                            <a href="{% url 'gestion:facture-list' %}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> Annuler
-                            </a>
-                            
                         </div>
                     </form>
                 </div>
@@ -102,19 +129,16 @@
 
 {% block javascript %}
 <script>
-$(document).ready(function() {
-    // Calcul automatique de la part entreprise
+$(function() {
     function calculatePart() {
         const montant = parseFloat($('#id_montant_total').val()) || 0;
         const commission = parseFloat($('#id_commission_laveur').val()) || 0;
-        const part = montant - commission;
-        $('#part_entreprise').val(part.toFixed(2));
+        $('#part_entreprise').val((montant - commission).toFixed(2));
     }
-    
+
     $('#id_montant_total, #id_commission_laveur').on('input', calculatePart);
-    
-    // Pré-remplir le montant et la commission quand un service est sélectionné
-    $('#id_service').change(function() {
+
+    $('#id_service').on('change', function() {
         const serviceId = $(this).val();
         if (serviceId) {
             $.get(`/api/services/${serviceId}/`, function(data) {
@@ -124,6 +148,9 @@ $(document).ready(function() {
             });
         }
     });
+
+    // Initial calculation on load
+    calculatePart();
 });
 </script>
 {% endblock %}

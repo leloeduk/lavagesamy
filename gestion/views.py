@@ -147,21 +147,39 @@ class FactureListView(LoginRequiredMixin, ListView):
             
         return queryset.select_related('service', 'laveur', 'auteur')
 
+
 class FactureCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Facture
     form_class = FactureForm
     template_name = 'gestion/factures/create.html'
-    success_url = '/gestion/factures/'
+    success_url = '/gestion/factures/' # + propre que hardcodé
 
     def test_func(self):
+        # Seuls les admins et caissiers peuvent accéder à cette vue
         return self.request.user.role in ['admin', 'caissier']
-    
+
     def form_valid(self, form):
+        # Attribue l'auteur automatiquement
         form.instance.auteur = self.request.user
-        form.instance.montant_total = form.instance.service.prix_total
+
+        # Si un montant manuel est saisi, on l'utilise
+        montant_personnalise = form.cleaned_data.get('montant')
+
+        if montant_personnalise:
+            form.instance.montant_total = montant_personnalise
+        else:
+            form.instance.montant_total = form.instance.service.prix_total
+
+        # Commission par défaut issue du service
         form.instance.commission_laveur = form.instance.service.commission_laveur
-        messages.success(self.request, "Facture créée avec succès!")
+
+        # Message utilisateur
+        messages.success(self.request, f"✅ Facture créée avec succès !")
         return super().form_valid(form)
+
+    def handle_no_permission(self):
+        messages.error(self.request, "⛔ Vous n'avez pas la permission d'accéder à cette page.")
+        return super().handle_no_permission()
 class FactureDetailView(DetailView):
     model = Facture
     template_name = 'gestion/factures/detail.html'     
@@ -216,3 +234,23 @@ class UserCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         response = super().form_valid(form)
         messages.success(self.request, "Utilisateur créé avec succès!")
         return response
+    
+class UserDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = User
+    template_name = 'gestion/utilisateurs/detail.html'
+    context_object_name = 'user_detail'
+    
+    def test_func(self):
+        return self.request.user.role == 'admin'
+
+class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = User
+    template_name = 'gestion/utilisateurs/confirm_delete.html'
+    success_url = reverse_lazy('gestion:utilisateur-list')
+    
+    def test_func(self):
+        return self.request.user.role == 'admin'
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Utilisateur supprimé avec succès!")
+        return super().delete(request, *args, **kwargs)

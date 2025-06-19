@@ -18,7 +18,9 @@ class FactureForm(forms.ModelForm):
             'service': forms.Select(attrs={'class': 'form-select'}),
             'laveur': forms.Select(attrs={'class': 'form-select'}),
             'statut': forms.Select(attrs={'class': 'form-select'}),
-            'mode_paiement': forms.Select(attrs={'class': 'form-select'}),
+            'mode_paiement': forms.Select(attrs={'class': 'form-select'}
+                                          ),
+                                          
         }
     
     def __init__(self, *args, **kwargs):

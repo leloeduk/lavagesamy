@@ -1,66 +1,55 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card shadow">
-        <div class="text-center mb-4">
-            <img src="{% static 'core/images/logo.png' %}" alt="Logo" class="auth-logo">
-            <h2 class="mt-3">Connexion</h2>
-        </div>
-
-        <form method="post" id="loginForm" class="auth-form">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Nom d'utilisateur</label>
-                <input type="text" class="form-control" id="username" name="username" required>
-            </div>
-            <div class="mb-4">
-                <label for="password" class="form-label">Mot de passe</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100" id="loginBtn">
-                <span class="btn-text">Se connecter</span>
-                <span class="spinner-border spinner-border-sm" id="loginSpinner" style="display:none;"></span>
-            </button>
-        </form>
-
-        <div class="auth-footer mt-3 text-center">
-            <p class="mb-0">Pas de compte? <a href="{% url 'signup' %}">S'inscrire</a></p>
-        </div>
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+  <div class="card shadow-lg p-4" style="max-width: 450px; width: 100%;">
+    <div class="text-center mb-4">
+      <img src="{% static 'core/images/logo.png' %}" alt="Logo" class="img-fluid" style="height: 60px;">
+      <h2 class="mt-3">Connexion</h2>
+      <p class="text-muted small">Connectez-vous à votre compte Lavage Samy Auto</p>
     </div>
+
+    <form method="post" id="loginForm">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+      
+      <div class="mb-3">
+        <label for="id_username" class="form-label">Nom d'utilisateur</label>
+        {{ form.username|add_class:"form-control" }}
+      </div>
+      <div class="mb-4">
+        <label for="id_password" class="form-label">Mot de passe</label>
+        {{ form.password|add_class:"form-control" }}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center" id="loginBtn">
+        <span class="btn-text">Se connecter</span>
+        <span class="spinner-border spinner-border-sm ms-2" id="loginSpinner" style="display:none;"></span>
+      </button>
+    </form>
+
+    <div class="text-center mt-4">
+      <p class="small mb-1"><a href="#">Mot de passe oublié ?</a></p>
+      <p class="small mb-0">Pas encore de compte ? <a href="{% url 'signup' %}">Créer un compte</a></p>
+    </div>
+  </div>
 </div>
 
-<style>
-    .auth-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 80vh;
-        padding: 20px;
-    }
-    .auth-card {
-        background: white;
-        border-radius: 10px;
-        padding: 30px;
-        width: 100%;
-        max-width: 400px;
-    }
-    .auth-logo {
-        height: 70px;
-        width: auto;
-    }
-</style>
-
 <script>
-    document.getElementById('loginForm').addEventListener('submit', function() {
-        const btn = document.getElementById('loginBtn');
-        const spinner = document.getElementById('loginSpinner');
-        const btnText = btn.querySelector('.btn-text');
-        
-        btn.disabled = true;
-        btnText.style.display = 'none';
-        spinner.style.display = 'inline-block';
-    });
+  document.getElementById('loginForm').addEventListener('submit', function () {
+    const btn = document.getElementById('loginBtn');
+    const spinner = document.getElementById('loginSpinner');
+    const btnText = btn.querySelector('.btn-text');
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+  });
 </script>
 {% endblock %}

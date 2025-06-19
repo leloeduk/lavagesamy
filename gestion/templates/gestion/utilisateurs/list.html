@@ -1,11 +1,11 @@
-{% extends 'core/base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}Gestion des Utilisateurs{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Gestion des Utilisateurs</h1>
-    <a href="{% url 'utilisateur-create' %}" class="btn btn-primary">
+    <a href="{% url 'gestion:utilisateur-create' %}" class="btn btn-primary">
         <i class="bi bi-plus"></i> Nouvel Utilisateur
     </a>
 </div>
@@ -84,7 +84,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <form method="post" action="{% url 'utilisateur-delete' user.id %}">
+                <form method="post" action="{% url 'gestion:utilisateur-delete' user.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Supprimer</button>
                 </form>
