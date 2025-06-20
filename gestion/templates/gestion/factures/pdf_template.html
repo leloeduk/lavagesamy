@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ facture.numero_facture }}</title>
+    <link rel="stylesheet" href="{% static 'core/css/pdf.css' %}">
+</head>
+<body>
+
+<!-- Filigrane -->
+<img src="{% static 'core/images/logo.png' %}" alt="Filigrane" class="watermark" />
+
+<!-- En-tête -->
+<header>
+    <div>
+        <img src="{% static 'core/images/logo.png' %}" alt="Logo Lavage Samy Auto" class="logo">
+    </div>
+    <div class="invoice-info">
+        <h1>Facture N° {{ facture.numero_facture }}</h1>
+        <p>Date : {{ facture.date_heure|date:"d/m/Y H:i" }}</p>
+    </div>
+</header>
+
+<section>
+    <h3>Client</h3>
+    <p><strong>Nom :</strong> {{ facture.nom_client|default:"-" }}</p>
+    <p><strong>Service :</strong> {{ facture.service.nom }}</p>
+    <p><strong>Laveur :</strong> {{ facture.laveur.get_full_name }}</p>
+</section>
+
+<section>
+    <h3>Détails</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Montant Total</td>
+                <td>{{ facture.montant_total }} FCFA</td>
+            </tr>
+            <tr>
+                <td>Commission Laveur</td>
+                <td>{{ facture.commission_laveur }} FCFA</td>
+            </tr>
+            <tr>
+                <td>Part Entreprise</td>
+                <td>{{ facture.part_entreprise }} FCFA</td>
+            </tr>
+            <tr>
+                <td>Mode de Paiement</td>
+                <td>{{ facture.get_mode_paiement_display }}</td>
+            </tr>
+            <tr>
+                <td>Statut</td>
+                <td>{{ facture.get_statut_display }}</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>Total à Payer</td>
+                <td>{{ facture.montant_total }} FCFA</td>
+            </tr>
+        </tfoot>
+    </table>
+</section>
+
+{% if facture.commentaire %}
+<section>
+    <h3>Commentaire</h3>
+    <p>{{ facture.commentaire }}</p>
+</section>
+{% endif %}
+
+<div class="signature">
+    <div>
+        <p>Signature Client</p>
+        <br><br>
+        <p>_________________________</p>
+    </div>
+    <div>
+        <p>Signature Laveur</p>
+        <br><br>
+        <p>_________________________</p>
+    </div>
+</div>
+
+</body>
+</html>

@@ -6,7 +6,7 @@ body {
 }
 :root {
     --primary-blue: #0a2d5a;    /* Bleu marine du logo */
-    --accent-red: #e63946;      /* Rouge vif pour les accents */
+    --accent-blue: #004cb0b5;    /* Bleu ciel du logo */
     --light-blue: #a8dadc;      /* Bleu clair pour les effets */
     --pure-white: #ffffff;      /* Blanc pur */
 }
@@ -104,7 +104,7 @@ body {
 /* Navbar - Adaptation avec le bleu marine */
 .navbar.bg-primary {
     background-color: var(--primary-blue) !important;
-    border-bottom: 2px solid var(--accent-red); /* Bordure rouge pour contraste */
+    border-bottom: 2px solid var(--accent-blue); /* Bordure rouge pour contraste */
 }
 
 /* Liens de la navbar */
@@ -120,13 +120,13 @@ body {
 /* Dropdown menu */
 .dropdown-menu {
     background-color: var(--primary-blue);
-    border: 1px solid var(--accent-red);
+    border: 1px solid var(--accent-blue);
 }
 .dropdown-item {
     color: var(--pure-white);
 }
 .dropdown-item:hover {
-    background-color: var(--accent-red);
+    background-color: var(--accent-blue);
     color: var(--pure-white);
 }
 
@@ -139,14 +139,14 @@ footer a {
     color: var(--light-blue);
 }
 footer a:hover {
-    color: var(--accent-red);
+    color: var(--accent-blue);
 }
 
 /* Boutons et interactions */
 .btn-primary {
     background-color: var(--primary-blue);
-    border-color: var(--accent-red);
+    border-color: var(--accent-blue);
 }
 .btn-primary:hover {
-    background-color: var(--accent-red);
+    background-color: var(--accent-blue);
 }

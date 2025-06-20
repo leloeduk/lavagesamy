@@ -25,7 +25,7 @@ class Facture(models.Model):
         ('non_payé', 'Non payé'),
         ('en_cours', 'En cours'),
     )
-    
+   
     MODES_PAIEMENT = (
         ('espèce', 'Espèce'),
         ('mobile', 'Mobile Money'),
@@ -36,12 +36,21 @@ class Facture(models.Model):
     nom_client = models.CharField(max_length=100, blank=True)
     auteur = models.ForeignKey(User, related_name="factures_creees", on_delete=models.PROTECT)
     service = models.ForeignKey(Service, on_delete=models.PROTECT)
-    laveur = models.ForeignKey(User, related_name="factures_realisees", 
-                              limit_choices_to={'role': 'laveur'},
-                              on_delete=models.PROTECT)
-    montant_total = models.DecimalField(max_digits=10, decimal_places=2)
-    commission_laveur = models.DecimalField(max_digits=10, decimal_places=2)
+    laveur = models.ForeignKey(
+        User,
+        related_name="factures_realisees",
+        limit_choices_to={'role': 'laveur'},
+        on_delete=models.PROTECT
+    )
+    
+    # 💡 Champ saisi manuellement
+    montant = models.DecimalField(max_digits=10, decimal_places=2, help_text="Montant total payé par le client")
+    
+    # Ces champs sont calculés automatiquement
+    montant_total = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    commission_laveur = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
     part_entreprise = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+
     statut = models.CharField(max_length=20, choices=STATUTS, default='en_cours')
     mode_paiement = models.CharField(max_length=20, choices=MODES_PAIEMENT, default='espèce')
     date_heure = models.DateTimeField(auto_now_add=True)
@@ -54,15 +63,16 @@ class Facture(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.numero_facture:
-            # Génère un numéro unique basé sur la date et un UUID
             date_part = timezone.now().strftime("%Y%m%d")
             unique_part = uuid.uuid4().hex[:6].upper()
-            self.numero_facture = f"FACT-{date_part}-{unique_part}"
-        
-        # Calcul de la part entreprise
+            self.numero_facture = f"SAMY_AUTO-Facture-{date_part}-{unique_part}"
+
+        # 💡 Logique ajoutée
+        self.montant_total = self.montant
+        self.commission_laveur = self.service.commission_laveur
         self.part_entreprise = self.montant_total - self.commission_laveur
+
         super().save(*args, **kwargs)
-    
 
     def __str__(self):
         return f"Facture {self.numero_facture} - {self.get_statut_display()}"

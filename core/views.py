@@ -29,6 +29,12 @@ def login_view(request):
 
 
 
+from django.contrib.auth import login
+from django.contrib import messages
+from django.shortcuts import render, redirect
+
+from .forms import CustomUserCreationForm
+
 def signup_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -37,20 +43,14 @@ def signup_view(request):
             user = form.save()
             print("🆕 Utilisateur créé :", user)
 
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.success(request, "Bienvenue, votre compte a été créé avec succès.")
-                return redirect('gestion:dashboard')
-            else:
-                print("❌ Authentification échouée")
+            login(request, user)  # connexion directe
+            messages.success(request, "Bienvenue, votre compte a été créé avec succès.")
+            return redirect('gestion:dashboard')
         else:
             print("❌ Formulaire invalide :", form.errors)
     else:
         form = CustomUserCreationForm()
-    
+
     return render(request, 'core/signup.html', {'form': form})
 
 

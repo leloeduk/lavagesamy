@@ -9,24 +9,34 @@ class ServiceForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 3}),
         }
 
+from django import forms
+from .models import Facture, User
+
 class FactureForm(forms.ModelForm):
     class Meta:
         model = Facture
-        fields = ['nom_client', 'service', 'laveur', 'statut', 'mode_paiement', 'commentaire']
+        fields = [
+            'nom_client',
+            'service',
+            'laveur',
+            'montant',  # ✅ Ajout ici
+            'statut',
+            'mode_paiement',
+            'commentaire',
+        ]
         widgets = {
             'commentaire': forms.Textarea(attrs={'rows': 2}),
             'service': forms.Select(attrs={'class': 'form-select'}),
             'laveur': forms.Select(attrs={'class': 'form-select'}),
             'statut': forms.Select(attrs={'class': 'form-select'}),
-            'mode_paiement': forms.Select(attrs={'class': 'form-select'}
-                                          ),
-                                          
+            'mode_paiement': forms.Select(attrs={'class': 'form-select'}),
+            'montant': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),  # ✅ Widget propre
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtre les laveurs seulement
         self.fields['laveur'].queryset = User.objects.filter(role='laveur')
+        self.fields['service'].queryset = Service.objects.all()
     
     def clean_numero_facture(self):
         numero = self.cleaned_data['numero_facture']

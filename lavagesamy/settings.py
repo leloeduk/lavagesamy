@@ -162,10 +162,15 @@ LOGOUT_REDIRECT_URL = 'login'
 # Par (si vous voulez ignorer ce dossier)
 # STATICFILES_DIRS = []
 
-
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]  # Pour le développement
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')    # Pour la production
+
+# Ce répertoire contiendra tous tes fichiers statiques personnalisés pendant le développement
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+
+# Pour la production (collectstatic va mettre tous les fichiers ici)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Médias (futurs PDF ou fichiers uploadés)
 MEDIA_URL = '/media/'

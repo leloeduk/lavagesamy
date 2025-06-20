@@ -1,7 +1,12 @@
+import os
+from django.http import Http404, HttpResponse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
+from weasyprint import CSS, HTML
+from django.template.loader import render_to_string
+from django.conf import settings
 from .models import Facture, Service
 from core.models import User
 from .forms import FactureForm, ServiceForm
@@ -152,38 +157,80 @@ class FactureCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Facture
     form_class = FactureForm
     template_name = 'gestion/factures/create.html'
-    success_url = '/gestion/factures/' # + propre que hardcodé
+    success_url = '/gestion/factures/'  # ✨ Plus propre à mettre dans un reverse_lazy à long terme
 
     def test_func(self):
         # Seuls les admins et caissiers peuvent accéder à cette vue
         return self.request.user.role in ['admin', 'caissier']
 
     def form_valid(self, form):
-        # Attribue l'auteur automatiquement
+        # Attribue l'auteur
         form.instance.auteur = self.request.user
 
-        # Si un montant manuel est saisi, on l'utilise
+        service = form.cleaned_data['service']
         montant_personnalise = form.cleaned_data.get('montant')
 
         if montant_personnalise:
             form.instance.montant_total = montant_personnalise
         else:
-            form.instance.montant_total = form.instance.service.prix_total
+            form.instance.montant_total = service.prix_total
 
-        # Commission par défaut issue du service
-        form.instance.commission_laveur = form.instance.service.commission_laveur
+        # Toujours utiliser la commission du service
+        form.instance.commission_laveur = service.commission_laveur
 
-        # Message utilisateur
-        messages.success(self.request, f"✅ Facture créée avec succès !")
+        # Calcul automatique de la part entreprise
+        form.instance.part_entreprise = form.instance.montant_total - form.instance.commission_laveur
+
+        messages.success(self.request, "✅ Facture créée avec succès !")
         return super().form_valid(form)
 
     def handle_no_permission(self):
         messages.error(self.request, "⛔ Vous n'avez pas la permission d'accéder à cette page.")
         return super().handle_no_permission()
-class FactureDetailView(DetailView):
+    
+class FactureDetailView(LoginRequiredMixin, DetailView):
     model = Facture
-    template_name = 'gestion/factures/detail.html'     
+    template_name = 'gestion/factures/detail.html'
+    context_object_name = 'facture'
 
+    def get_queryset(self):
+        return Facture.objects.all()    
+class FactureUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Facture
+    form_class = FactureForm
+    template_name = 'gestion/factures/update.html'
+    success_url = '/gestion/factures/'
+
+    def test_func(self):
+        return self.request.user.role in ['admin', 'caissier']
+
+    def form_valid(self, form):
+        service = form.cleaned_data['service']
+        montant_personnalise = form.cleaned_data.get('montant')
+
+        if montant_personnalise:
+            form.instance.montant_total = montant_personnalise
+        else:
+            form.instance.montant_total = service.prix_total
+
+        form.instance.commission_laveur = service.commission_laveur
+        form.instance.part_entreprise = form.instance.montant_total - form.instance.commission_laveur
+
+        messages.success(self.request, "✏️ Facture modifiée avec succès.")
+        return super().form_valid(form)
+
+class FactureDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Facture
+    template_name = 'gestion/factures/confirm_delete.html'
+    success_url = reverse_lazy('facture-list')  # à adapter selon tes noms d’URL
+
+    def test_func(self):
+        return self.request.user.role in ['admin', 'caissier']
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "🗑️ Facture supprimée avec succès.")
+        return super().delete(request, *args, **kwargs)
+   
 # === Services ===
 class ServiceListView(LoginRequiredMixin, ListView):
     model = Service
@@ -254,3 +301,26 @@ class UserDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Utilisateur supprimé avec succès!")
         return super().delete(request, *args, **kwargs)
+    
+
+def facture_pdf_view(request, pk):
+    try:
+        facture = Facture.objects.get(pk=pk)
+    except Facture.DoesNotExist:
+        raise Http404("Facture non trouvée")
+
+    # Render HTML template avec les données
+    html_string = render_to_string('gestion/factures/pdf_template.html', {'facture': facture})
+
+    # Chemin vers le CSS (dans static)
+    css_path = os.path.join(settings.BASE_DIR, 'core', 'static', 'core', 'css', 'pdf.css')  # ✅ correction ici
+
+    # Génération PDF
+    pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(stylesheets=[CSS(css_path)])
+
+    # Réponse HTTP avec le PDF
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    filename = f"{facture.numero_facture}.pdf"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+

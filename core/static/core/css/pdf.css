@@ -1,0 +1,83 @@
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 15px;
+    color: #2c2c2c;
+    margin: 1cm 2cm; /* top/bottom minimisé */
+    position: relative;
+    line-height: 1.5;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px; /* plus serré */
+    z-index: 10;
+}
+
+.logo {
+    width: 110px;
+    height: auto;
+    margin: 0;
+}
+
+.invoice-info {
+    text-align: right;
+    margin: 0;
+}
+
+.invoice-info h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #0a2d5a;
+}
+
+.invoice-info p {
+    margin: 2px 0;
+    font-size: 15px;
+    color: #444;
+}
+
+/* Filigrane plus léger, arrière-plan absolu */
+.watermark {
+    position: fixed;
+    top: 40%;
+    left: 5%;
+    width: 90%;
+    opacity: 0.06;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Tableau professionnel */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    z-index: 10;
+    position: relative;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    font-size: 12.5px;
+}
+
+th {
+    background-color: #0a2d5a;
+    color: white;
+    text-align: left;
+}
+
+tfoot td {
+    font-weight: bold;
+    background-color: #f2f2f2;
+}

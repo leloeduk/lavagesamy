@@ -5,7 +5,7 @@ from .models import Facture, Service, User
 
 @admin.register(Facture)
 class FactureAdmin(admin.ModelAdmin):
-    list_display = ('numero_facture', 'nom_client', 'montant_total', 'statut', 'date_heure')
+    list_display = ('numero_facture', 'nom_client','montant', 'montant_total', 'statut', 'date_heure')
     list_filter = ('statut', 'date_heure', 'service')
     search_fields = ('numero_facture', 'nom_client')
 

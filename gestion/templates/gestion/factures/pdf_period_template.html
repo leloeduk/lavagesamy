@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Factures - PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 20px;
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        p.sub-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 11px;
+            color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #aaa;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        tfoot td {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .small {
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Factures - Export PDF</h2>
+    <p class="sub-title">
+        {% if debut and fin %}
+            Période : du {{ debut|date:"d/m/Y" }} au {{ fin|date:"d/m/Y" }}
+        {% elif mois and annee %}
+            Mois : {{ mois|stringformat:"02d" }}/{{ annee }}
+        {% elif annee %}
+            Année : {{ annee }}
+        {% else %}
+            Période non spécifiée
+        {% endif %}
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Laveur</th>
+                <th>Montant</th>
+                <th>Statut</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for facture in factures %}
+            <tr>
+                <td>{{ facture.numero_facture }}</td>
+                <td>{{ facture.nom_client }}</td>
+                <td>{{ facture.service.nom }}</td>
+                <td>{{ facture.laveur.get_full_name }}</td>
+                <td class="text-right">{{ facture.montant_total|floatformat:0 }} FCFA</td>
+                <td>{{ facture.get_statut_display }}</td>
+                <td>{{ facture.date_heure|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-right">Total</td>
+                <td class="text-right">
+                    {{
+                        factures|map(attribute='montant_total')|sum|floatformat:0
+                    }} FCFA
+                </td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <p class="small text-center" style="margin-top: 30px;">
+        Généré le {{ now|date:"d/m/Y H:i" }} par {{ request.user.get_full_name }}
+    </p>
+
+</body>
+</html>

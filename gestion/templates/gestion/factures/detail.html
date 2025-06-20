@@ -1,171 +1,64 @@
 {% extends "base.html" %}
-
-{% block title %}Détails Facture #{{ facture.numero_facture }}{% endblock %}
+{% load static %}
+{% block title %}Détail Facture{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <h2><i class="fas fa-file-invoice"></i> Facture #{{ facture.numero_facture }}</h2>
-        </div>
-        <div class="col-md-6 text-right">
-            <a href="{% url 'gestion:facture-list' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour
-            </a>
-            <a href="#" class="btn btn-primary ml-2">
-                <i class="fas fa-print"></i> Imprimer
-            </a>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow mb-4">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Détails de la Facture</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <h5>Informations Client</h5>
-                            <p>
-                                <strong>Nom:</strong> {{ facture.nom_client|default:"Non spécifié" }}<br>
-                                <strong>Date:</strong> {{ facture.date_heure|date:"d/m/Y H:i" }}<br>
-                                <strong>Statut:</strong> 
-                                <span class="badge badge-{% if facture.statut == 'payé' %}success{% elif facture.statut == 'non_payé' %}danger{% else %}warning{% endif %}">
-                                    {{ facture.get_statut_display }}
-                                </span>
-                            </p>
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Informations Paiement</h5>
-                            <p>
-                                <strong>Mode de paiement:</strong> {{ facture.get_mode_paiement_display }}<br>
-                                <strong>Créée par:</strong> {{ facture.auteur.get_full_name }}<br>
-                                <strong>Laveur:</strong> {{ facture.laveur.get_full_name }}
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    
-                    <h5 class="mb-3">Détails du Service</h5>
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Service</th>
-                                    <th class="text-right">Prix</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <strong>{{ facture.service.nom }}</strong><br>
-                                        <small>{{ facture.service.description }}</small>
-                                    </td>
-                                    <td class="text-right">{{ facture.service.prix_total|floatformat:0 }} FCFA</td>
-                                </tr>
-                            </tbody>
-                            <tfoot class="bg-light">
-                                <tr>
-                                    <th>Total</th>
-                                    <th class="text-right">{{ facture.montant_total|floatformat:0 }} FCFA</th>
-                                </tr>
-                                <tr>
-                                    <td>Commission Laveur</td>
-                                    <td class="text-right">{{ facture.commission_laveur|floatformat:0 }} FCFA</td>
-                                </tr>
-                                <tr>
-                                    <th>Part Entreprise</th>
-                                    <th class="text-right">{{ facture.part_entreprise|floatformat:0 }} FCFA</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    
-                    {% if facture.commentaire %}
-                    <div class="mt-3">
-                        <h5>Commentaire</h5>
-                        <p class="text-muted">{{ facture.commentaire }}</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card shadow">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Actions</h4>
-                </div>
-                <div class="card-body">
-                    {% if facture.statut != 'payé' %}
-                    <form method="post" action="{% url 'gestion:facture-payer' facture.pk %}">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success btn-block mb-3">
-                            <i class="fas fa-check-circle"></i> Marquer comme Payé
-                        </button>
-                    </form>
-                    {% endif %}
-                    
-                    <a href="#" class="btn btn-info btn-block mb-3">
-                        <i class="fas fa-edit"></i> Modifier
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="fas fa-file-invoice me-2"></i> Facture {{ facture.numero_facture }}</h3>
+                    <a href="{% url 'gestion:facture-pdf' facture.pk %}" class="btn btn-light btn-sm" target="_blank">
+                        <i class="bi bi-download"></i> Télécharger PDF
                     </a>
-                    
-                    <button class="btn btn-danger btn-block" data-toggle="modal" data-target="#annulerModal">
-                        <i class="fas fa-times-circle"></i> Annuler
-                    </button>
-                </div>
-            </div>
-            
-            <div class="card shadow mt-4">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Historique</h4>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <small class="text-muted">Créée le {{ facture.date_heure|date:"d/m/Y H:i" }}</small><br>
-                            Par {{ facture.auteur.get_full_name }}
-                        </li>
-                        {% if facture.statut == 'payé' %}
-                        <li class="list-group-item">
-                            <small class="text-muted">Payée le {{ facture.date_heure|date:"d/m/Y H:i" }}</small><br>
-                            Mode: {{ facture.get_mode_paiement_display }}
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                    <dl class="row mb-3">
+                        <dt class="col-sm-4">Nom du client</dt>
+                        <dd class="col-sm-8">{{ facture.nom_client|default:"-" }}</dd>
 
-<!-- Modal Annulation -->
-<div class="modal fade" id="annulerModal" tabindex="-1" role="dialog" aria-labelledby="annulerModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="annulerModalLabel">Annuler la Facture</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form method="post" action="{% url 'gestion:facture-annuler' facture.pk %}">
-                <div class="modal-body">
-                    {% csrf_token %}
-                    <p>Êtes-vous sûr de vouloir annuler cette facture ? Cette action est irréversible.</p>
-                    <div class="form-group">
-                        <label for="raison">Raison de l'annulation</label>
-                        <textarea class="form-control" id="raison" name="raison" rows="3" required></textarea>
+                        <dt class="col-sm-4">Service</dt>
+                        <dd class="col-sm-8">{{ facture.service.nom }}</dd>
+
+                        <dt class="col-sm-4">Laveur</dt>
+                        <dd class="col-sm-8">{{ facture.laveur.get_full_name }}</dd>
+
+                        <dt class="col-sm-4">Montant total</dt>
+                        <dd class="col-sm-8">{{ facture.montant_total }} FCFA</dd>
+
+                        <dt class="col-sm-4">Commission laveur</dt>
+                        <dd class="col-sm-8">{{ facture.commission_laveur }} FCFA</dd>
+
+                        <dt class="col-sm-4">Part entreprise</dt>
+                        <dd class="col-sm-8">{{ facture.part_entreprise }} FCFA</dd>
+
+                        <dt class="col-sm-4">Statut</dt>
+                        <dd class="col-sm-8">{{ facture.get_statut_display }}</dd>
+
+                        <dt class="col-sm-4">Mode de paiement</dt>
+                        <dd class="col-sm-8">{{ facture.get_mode_paiement_display }}</dd>
+
+                        <dt class="col-sm-4">Date de création</dt>
+                        <dd class="col-sm-8">{{ facture.date_heure|date:"d/m/Y H:i" }}</dd>
+
+                        <dt class="col-sm-4">Commentaire</dt>
+                        <dd class="col-sm-8">{{ facture.commentaire|linebreaksbr|default:"-" }}</dd>
+                    </dl>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{% url 'gestion:facture-detail' facture.pk %}" class="btn btn-warning">
+                            <i class="bi bi-pencil-square"></i> Modifier
+                        </a>
+                        <a href="{% url 'gestion:facture-delete' facture.pk %}" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </a>
+                        <a href="{% url 'gestion:facture-list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left-circle"></i> Retour
+                        </a>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
-                    <button type="submit" class="btn btn-danger">Confirmer l'annulation</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load widget_tweaks %}
+
+{% block title %}Modifier une Facture{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark d-flex align-items-center" style="background-color: #ffc107;">
+                    <i class="fas fa-edit me-2"></i>
+                    <h3 class="mb-0">Modifier Facture {{ form.instance.numero_facture }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Nom client -->
+                        <div class="mb-3">
+                            <label for="{{ form.nom_client.id_for_label }}" class="form-label fw-semibold">Nom Client (Optionnel)</label>
+                            {% render_field form.nom_client class="form-control" placeholder="Nom du client" %}
+                            {% if form.nom_client.errors %}
+                                <div class="invalid-feedback d-block">{{ form.nom_client.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Service -->
+                        <div class="mb-3">
+                            <label for="{{ form.service.id_for_label }}" class="form-label fw-semibold">Service</label>
+                            {% render_field form.service class="form-select" %}
+                            {% if form.service.errors %}
+                                <div class="invalid-feedback d-block">{{ form.service.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Laveur -->
+                        <div class="mb-3">
+                            <label for="{{ form.laveur.id_for_label }}" class="form-label fw-semibold">Laveur</label>
+                            {% render_field form.laveur class="form-select" %}
+                            {% if form.laveur.errors %}
+                                <div class="invalid-feedback d-block">{{ form.laveur.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Montant -->
+                        <div class="mb-3">
+                            <label for="{{ form.montant.id_for_label }}" class="form-label fw-semibold">Montant (FCFA)</label>
+                            {% render_field form.montant class="form-control" placeholder="Exemple : 10000" %}
+                            {% if form.montant.errors %}
+                                <div class="invalid-feedback d-block">{{ form.montant.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Statut -->
+                        <div class="mb-3">
+                            <label for="{{ form.statut.id_for_label }}" class="form-label fw-semibold">Statut</label>
+                            {% render_field form.statut class="form-select" %}
+                            {% if form.statut.errors %}
+                                <div class="invalid-feedback d-block">{{ form.statut.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Mode paiement -->
+                        <div class="mb-3">
+                            <label for="{{ form.mode_paiement.id_for_label }}" class="form-label fw-semibold">Mode de Paiement</label>
+                            {% render_field form.mode_paiement class="form-select" %}
+                            {% if form.mode_paiement.errors %}
+                                <div class="invalid-feedback d-block">{{ form.mode_paiement.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Commentaire -->
+                        <div class="mb-3">
+                            <label for="{{ form.commentaire.id_for_label }}" class="form-label fw-semibold">Commentaire</label>
+                            {% render_field form.commentaire class="form-control" rows="3" placeholder="Commentaire supplémentaire (optionnel)" %}
+                            {% if form.commentaire.errors %}
+                                <div class="invalid-feedback d-block">{{ form.commentaire.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Boutons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'gestion:facture-detail' form.instance.pk %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left-circle"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
