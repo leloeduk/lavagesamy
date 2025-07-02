@@ -3,6 +3,7 @@ from django.http import Http404, HttpResponse
 from django.views.generic import ListView, CreateView, UpdateView, DetailView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from weasyprint import CSS, HTML
 from django.template.loader import render_to_string
@@ -13,8 +14,8 @@ from .forms import FactureForm, ServiceForm
 from core.forms import CustomUserCreationForm
 from django.views.generic import TemplateView
 from django.utils import timezone
-from django.db.models import Sum, Count
-from datetime import timedelta
+from django.db.models import F, Sum, Count, Q, Case, When, FloatField
+from datetime import datetime, timedelta
 # from django.db.models import Q
 from django.utils.timezone import now
 
@@ -22,7 +23,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'gestion/dashboard/dashboard.html'
     
     def get_date_ranges(self):
-        """Helper method to generate date ranges for statistics"""
         today = timezone.now().date()
         return {
             'today': today,
@@ -31,86 +31,41 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'year_ago': today - timedelta(days=365),
         }
 
-    def get_period_comparison(self, current_period_data, previous_period_data, field):
-        """Calculate percentage change between periods"""
-        current = current_period_data.get(field, 0) or 0
-        previous = previous_period_data.get(field, 0) or 0
-        if previous == 0:
-            return 0
-        return ((current - previous) / previous) * 100
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         dates = self.get_date_ranges()
-        
-        # Base querysets
         factures = Facture.objects.select_related('service', 'laveur', 'auteur')
         services = Service.objects.all()
         
-        # Current period stats
-        current_month = now().month
-        current_year = now().year
+        current_month = timezone.now().month
+        current_year = timezone.now().year
         
-        # Performance metrics
         context.update({
-            # Real-time counts
             'factures_count': factures.count(),
             'services_count': services.count(),
-            
-            # Financial totals
-            'total_encaisse': factures.aggregate(
-                total=Sum('montant_total')
-            )['total'] or 0,
-            'total_commissions': factures.aggregate(
-                total=Sum('commission_laveur')
-            )['total'] or 0,
-            'benefice_net': factures.aggregate(
-                net=Sum('montant_total') - Sum('commission_laveur')
-            )['net'] or 0,
-            
-            # Recent activity
+            'total_encaisse': factures.aggregate(total=Sum('montant_total'))['total'] or 0,
+            'total_commissions': factures.aggregate(total=Sum('commission_laveur'))['total'] or 0,
+            'benefice_net': factures.aggregate(net=Sum('montant_total') - Sum('commission_laveur'))['net'] or 0,
             'recent_factures': factures.order_by('-date_heure')[:5],
-            'pending_factures': factures.filter(
-                statut='en_cours'
-            ).count(),
-            
-            # Status distribution
+            'pending_factures': factures.filter(statut='en_cours').count(),
             'facture_status_distribution': self.get_status_distribution(factures),
-            
-            # Payment method distribution
             'payment_method_distribution': self.get_payment_method_distribution(factures),
+            'monthly_stats': self.get_monthly_stats(factures, current_year),
         })
-        
-        # Time-based comparisons
-        monthly_stats = self.get_monthly_stats(factures, current_year)
-        context['monthly_stats'] = monthly_stats
-        context['current_month_stats'] = next(
-            (m for m in monthly_stats if m['month'] == f"{current_year}-{current_month:02d}"),
-            {}
-        )
         
         return context
 
     def get_status_distribution(self, factures):
-        """Get count of factures by status"""
-        return (
-            factures.values('statut')
-            .annotate(count=Count('id'))
-            .order_by('-count')
-        )
+        return factures.values('statut').annotate(count=Count('id')).order_by('-count')
 
     def get_payment_method_distribution(self, factures):
-        """Get count of factures by payment method"""
-        return (
-            factures.values('mode_paiement')
-            .annotate(count=Count('id'), total=Sum('montant_total'))
-            .order_by('-total')
-        )
+        return factures.values('mode_paiement').annotate(
+            count=Count('id'), 
+            total=Sum('montant_total')
+        ).order_by('-total')
 
     def get_monthly_stats(self, factures, current_year):
-        """Generate monthly statistics for the current year"""
         monthly_stats = []
-        
         for month in range(1, 13):
             month_data = factures.filter(
                 date_heure__year=current_year,
@@ -120,7 +75,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 total=Sum('montant_total'),
                 commissions=Sum('commission_laveur'),
             )
-            
             monthly_stats.append({
                 'month': f"{current_year}-{month:02d}",
                 'count': month_data['count'] or 0,
@@ -128,7 +82,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 'commissions': month_data['commissions'] or 0,
                 'profit': (month_data['total'] or 0) - (month_data['commissions'] or 0),
             })
-        
         return monthly_stats
 
 # === Factures ===
@@ -241,23 +194,175 @@ class ServiceCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Service
     form_class = ServiceForm
     template_name = 'gestion/services/create.html'
-    success_url = '/gestion/services/'
+    success_url = reverse_lazy('service-list')
     
     def test_func(self):
         return self.request.user.role == 'admin'
-
-# === Statistiques ===
-class StatistiquesMensuellesView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    model = Facture
-    template_name = 'gestion/statistiques/mensuelles.html'
     
-    def test_func(self):
-        return self.request.user.role in ['admin', 'superviseur']
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Service créé avec succès!")
+        return response
+
+class ServiceDetailView(LoginRequiredMixin, DetailView):
+    model = Service
+    template_name = 'gestion/services/detail.html'
+    context_object_name = 'service'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Ajoutez ici vos calculs de statistiques
+        # Vous pouvez ajouter des données supplémentaires ici si nécessaire
+        # Par exemple, les factures associées à ce service
+        context['factures_associees'] = self.object.facture_set.all()[:5]  # Les 5 dernières factures
         return context
+
+
+class ServiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Service
+    form_class = ServiceForm
+    template_name = 'gestion/services/update.html'
+    success_url = reverse_lazy('gestion:service-list')  # Assurez-vous d'utiliser le bon espace de noms
+
+    def test_func(self):
+        return self.request.user.role == 'admin'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, "Service mis à jour avec succès!")
+        return response
+
+class ServiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Service
+    template_name = 'gestion/services/confirm_delete.html'
+    success_url = reverse_lazy('service-list')
+    
+    def test_func(self):
+        return self.request.user.role == 'admin'
+    
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Service supprimé avec succès!")
+        return super().delete(request, *args, **kwargs)
+# === Statistiques ===
+class StatistiquesMensuellesView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+   template_name = 'gestion/statistiques/statistiques.html'
+
+   def test_func(self):
+        return self.request.user.role in ['admin', 'superviseur']
+
+   def get_date_filters(self):
+        today = timezone.now().date()
+
+        if self.request.GET.get('specific_date'):
+            specific_date = datetime.strptime(self.request.GET.get('specific_date'), '%Y-%m-%d').date()
+            start_date = timezone.make_aware(datetime.combine(specific_date, datetime.min.time()))
+            end_date = start_date + timedelta(days=1)
+            period_name = f"Journée du {specific_date.strftime('%d/%m/%Y')}"
+            return start_date, end_date, period_name, 'daily'
+
+        elif self.request.GET.get('month'):
+            year = int(self.request.GET.get('year', today.year))
+            month = int(self.request.GET.get('month'))
+            start_date = timezone.make_aware(datetime(year, month, 1))
+            end_date = timezone.make_aware(datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1))
+            period_name = f"Mois de {start_date.strftime('%B %Y')}"
+            return start_date, end_date, period_name, 'monthly'
+
+        elif self.request.GET.get('year'):
+            year = int(self.request.GET.get('year'))
+            start_date = timezone.make_aware(datetime(year, 1, 1))
+            end_date = timezone.make_aware(datetime(year + 1, 1, 1))
+            period_name = f"Année {year}"
+            return start_date, end_date, period_name, 'yearly'
+
+        start_date = timezone.make_aware(datetime(today.year, today.month, 1))
+        end_date = timezone.make_aware(datetime(today.year + 1, 1, 1) if today.month == 12 else datetime(today.year, today.month + 1, 1))
+        period_name = "Mois en cours"
+        return start_date, end_date, period_name, 'monthly'
+
+   def get_washers_stats(self, start_date, end_date):
+        return (
+            User.objects
+            .filter(role='laveur')
+            .annotate(
+                factures_count=Count('factures_realisees', filter=Q(factures_realisees__date_heure__range=(start_date, end_date))),
+                total_commission=Sum('factures_realisees__commission_laveur', filter=Q(factures_realisees__date_heure__range=(start_date, end_date)))
+            )
+            .annotate(
+                avg_per_facture=Case(
+                    When(factures_count__gt=0, then=F('total_commission') / F('factures_count')),
+                    default=0,
+                    output_field=FloatField()
+                )
+            )
+            .order_by('-total_commission')[:10]
+        )
+
+   def get_services_stats(self, start_date, end_date):
+        return (
+            Service.objects
+            .annotate(
+                factures_count=Count('facture', filter=Q(facture__date_heure__range=(start_date, end_date))),
+                total_revenue=Sum('facture__montant_total', filter=Q(facture__date_heure__range=(start_date, end_date)))
+            )
+            .order_by('-factures_count')
+        )
+
+   def get_daily_stats(self, start_date, end_date):
+        days = []
+        current_day = start_date
+        while current_day < end_date:
+            next_day = current_day + timedelta(days=1)
+            factures = Facture.objects.filter(date_heure__range=(current_day, next_day))
+            days.append({
+                'date': current_day.date(),
+                'count': factures.count(),
+                'revenue': factures.aggregate(total=Sum('montant_total'))['total'] or 0
+            })
+            current_day = next_day
+        return days
+
+   def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        start_date, end_date, period_name, period_type = self.get_date_filters()
+        factures = Facture.objects.filter(date_heure__range=(start_date, end_date))
+
+        stats = factures.aggregate(
+            total_factures=Count('id'),
+            total_revenue=Sum('montant_total'),
+            total_commissions=Sum('commission_laveur'),
+            net_profit=Sum(F('montant_total') - F('commission_laveur'))
+        )
+
+        context.update({
+            'period_name': period_name,
+            'period_type': period_type,
+            'start_date': start_date.date(),
+            'end_date': (end_date - timedelta(seconds=1)).date(),
+            'stats': {
+                'factures': stats['total_factures'] or 0,
+                'revenue': stats['total_revenue'] or 0,
+                'commissions': stats['total_commissions'] or 0,
+                'net_profit': stats['net_profit'] or 0,
+                'avg_per_facture': (stats['total_revenue'] or 0) / (stats['total_factures'] or 1),
+            },
+            'top_washers': self.get_washers_stats(start_date, end_date),
+            'top_services': self.get_services_stats(start_date, end_date),
+            'daily_stats': self.get_daily_stats(start_date, end_date),
+            'available_years': range(2020, timezone.now().year + 1),
+            'available_months': [
+                {'value': i, 'name': month}
+                for i, month in enumerate([
+                    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+                ], start=1)
+            ],
+            'current_year': self.request.GET.get('year', timezone.now().year),
+            'current_month': self.request.GET.get('month', timezone.now().month),
+            'specific_date': self.request.GET.get('specific_date'),
+        })
+
+        return context
+
 
 # === Utilisateurs ===
 class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
@@ -324,3 +429,123 @@ def facture_pdf_view(request, pk):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+
+class StatistiquesView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    template_name = 'gestion/statistiques/statistiques.html'
+
+    def test_func(self):
+        return self.request.user.role in ['admin', 'superviseur']
+
+    def get_date_filters(self):
+        today = timezone.now().date()
+
+        if self.request.GET.get('specific_date'):
+            specific_date = datetime.strptime(self.request.GET.get('specific_date'), '%Y-%m-%d').date()
+            start_date = timezone.make_aware(datetime.combine(specific_date, datetime.min.time()))
+            end_date = start_date + timedelta(days=1)
+            period_name = f"Journée du {specific_date.strftime('%d/%m/%Y')}"
+            return start_date, end_date, period_name, 'daily'
+
+        elif self.request.GET.get('month'):
+            year = int(self.request.GET.get('year', today.year))
+            month = int(self.request.GET.get('month'))
+            start_date = timezone.make_aware(datetime(year, month, 1))
+            end_date = timezone.make_aware(datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1))
+            period_name = f"Mois de {start_date.strftime('%B %Y')}"
+            return start_date, end_date, period_name, 'monthly'
+
+        elif self.request.GET.get('year'):
+            year = int(self.request.GET.get('year'))
+            start_date = timezone.make_aware(datetime(year, 1, 1))
+            end_date = timezone.make_aware(datetime(year + 1, 1, 1))
+            period_name = f"Année {year}"
+            return start_date, end_date, period_name, 'yearly'
+
+        start_date = timezone.make_aware(datetime(today.year, today.month, 1))
+        end_date = timezone.make_aware(datetime(today.year + 1, 1, 1) if today.month == 12 else datetime(today.year, today.month + 1, 1))
+        period_name = "Mois en cours"
+        return start_date, end_date, period_name, 'monthly'
+
+    def get_washers_stats(self, start_date, end_date):
+        return (
+            User.objects
+            .filter(role='laveur')
+            .annotate(
+                factures_count=Count('factures_realisees', filter=Q(factures_realisees__date_heure__range=(start_date, end_date))),
+                total_commission=Sum('factures_realisees__commission_laveur', filter=Q(factures_realisees__date_heure__range=(start_date, end_date)))
+            )
+            .annotate(
+                avg_per_facture=Case(
+                    When(factures_count__gt=0, then=F('total_commission') / F('factures_count')),
+                    default=0,
+                    output_field=FloatField()
+                )
+            )
+            .order_by('-total_commission')[:10]
+        )
+
+    def get_services_stats(self, start_date, end_date):
+        return (
+            Service.objects
+            .annotate(
+                factures_count=Count('facture', filter=Q(facture__date_heure__range=(start_date, end_date))),
+                total_revenue=Sum('facture__montant_total', filter=Q(facture__date_heure__range=(start_date, end_date)))
+            )
+            .order_by('-factures_count')
+        )
+
+    def get_daily_stats(self, start_date, end_date):
+        days = []
+        current_day = start_date
+        while current_day < end_date:
+            next_day = current_day + timedelta(days=1)
+            factures = Facture.objects.filter(date_heure__range=(current_day, next_day))
+            days.append({
+                'date': current_day.date(),
+                'count': factures.count(),
+                'revenue': factures.aggregate(total=Sum('montant_total'))['total'] or 0
+            })
+            current_day = next_day
+        return days
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        start_date, end_date, period_name, period_type = self.get_date_filters()
+        factures = Facture.objects.filter(date_heure__range=(start_date, end_date))
+
+        stats = factures.aggregate(
+            total_factures=Count('id'),
+            total_revenue=Sum('montant_total'),
+            total_commissions=Sum('commission_laveur'),
+            net_profit=Sum(F('montant_total') - F('commission_laveur'))
+        )
+
+        context.update({
+            'period_name': period_name,
+            'period_type': period_type,
+            'start_date': start_date.date(),
+            'end_date': (end_date - timedelta(seconds=1)).date(),
+            'stats': {
+                'factures': stats['total_factures'] or 0,
+                'revenue': stats['total_revenue'] or 0,
+                'commissions': stats['total_commissions'] or 0,
+                'net_profit': stats['net_profit'] or 0,
+                'avg_per_facture': (stats['total_revenue'] or 0) / (stats['total_factures'] or 1),
+            },
+            'top_washers': self.get_washers_stats(start_date, end_date),
+            'top_services': self.get_services_stats(start_date, end_date),
+            'daily_stats': self.get_daily_stats(start_date, end_date),
+            'available_years': range(2020, timezone.now().year + 1),
+            'available_months': [
+                {'value': i, 'name': month}
+                for i, month in enumerate([
+                    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+                ], start=1)
+            ],
+            'current_year': self.request.GET.get('year', timezone.now().year),
+            'current_month': self.request.GET.get('month', timezone.now().month),
+            'specific_date': self.request.GET.get('specific_date'),
+        })
+
+        return context

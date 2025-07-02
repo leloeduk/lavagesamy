@@ -45,11 +45,18 @@
     </script> -->
 </td>
                             <td>{{ service.date_creation|date:"d/m/Y H:i" }}</td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-info" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </td>
+                          <td class="d-flex gap-1">
+    <a href="{% url 'gestion:service-detail' service.id %}" class="btn btn-sm btn-secondary" title="Détails">
+        <i class="fas fa-eye"></i>
+    </a>
+    <a href="{% url 'gestion:service-update' service.id %}" class="btn btn-sm btn-info" title="Modifier">
+        <i class="fas fa-edit"></i>
+    </a>
+    <a href="{% url 'gestion:confirm_delete' service.id %}" class="btn btn-sm btn-danger" title="Supprimer"
+       onclick="return confirm('Confirmer la suppression de ce service ?')">
+        <i class="fas fa-trash-alt"></i>
+    </a>
+</td>
                         </tr>
                         {% empty %}
                         <tr>

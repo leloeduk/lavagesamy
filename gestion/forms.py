@@ -6,11 +6,11 @@ class ServiceForm(forms.ModelForm):
         model = Service
         fields = ['nom', 'prix_total', 'commission_laveur', 'description']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
+            'nom': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_nom'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'id': 'id_description', 'rows': 3}),
+            'prix_total': forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_prix_total', 'min': '0'}),
+            'commission_laveur': forms.NumberInput(attrs={'class': 'form-control', 'id': 'id_commission_laveur', 'min': '0'}),
         }
-
-from django import forms
-from .models import Facture, User
 
 class FactureForm(forms.ModelForm):
     class Meta:

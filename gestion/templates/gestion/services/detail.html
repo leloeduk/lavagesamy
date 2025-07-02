@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Détails du Service: {{ service.nom }}</h2>
+    </div>
+    <div class="card-body">
+        <p><strong>Description:</strong> {{ service.description }}</p>
+        <p><strong>Prix total:</strong> {{ service.prix_total }} FCFA</p>
+        <p><strong>Commission laveur:</strong> {{ service.commission_laveur }} FCFA</p>
+        <p><strong>Durée moyenne:</strong> {{ service.duree_moyenne }} minutes</p>
+        
+        <h4 class="mt-4">Factures récentes pour ce service</h4>
+        {% if factures_associees %}
+            <ul>
+            {% for facture in factures_associees %}
+                <li>{{ facture.numero_facture }} - {{ facture.montant_total }} FCFA</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>Aucune facture associée à ce service.</p>
+        {% endif %}
+    </div>
+    <div class="card-footer">
+        <a href="{% url 'gestion:service-list' %}" class="btn btn-secondary">Retour à la liste</a>
+        {% if request.user.role == 'admin' %}
+            <a href="{% url 'gestion:service-update' service.pk %}" class="btn btn-primary">Modifier</a>
+            <a href="{% url 'gestion:confirm_delete' service.pk %}" class="btn btn-danger">Supprimer</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

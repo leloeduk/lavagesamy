@@ -17,14 +17,18 @@ urlpatterns = [
     path('factures/<int:pk>/pdf/', views.facture_pdf_view, name='facture-pdf'),  
 
     # Services
-    path('services/', views.ServiceListView.as_view(), name='service-list'),
-    path('services/nouveau/', views.ServiceCreateView.as_view(), name='service-create'),
+   path('services/', views.ServiceListView.as_view(), name='service-list'),
+   path('services/nouveau/', views.ServiceCreateView.as_view(), name='service-create'),
+   path('services/<int:pk>/', views.ServiceDetailView.as_view(), name='service-detail'),
+   path('services/<int:pk>/modifier/', views.ServiceUpdateView.as_view(), name= 'service-update'),
+   path('services/<int:pk>/supprimer/', views.ServiceDeleteView.as_view(), name='confirm_delete'),
+
    
     # Statistiques
     path('statistiques/mensuelles/', views.StatistiquesMensuellesView.as_view(), name='stats-mensuelles'),
     
     # Utilisateurs
-     path('utilisateurs/', views.UserListView.as_view(), name='utilisateur-list'),
+    path('utilisateurs/', views.UserListView.as_view(), name='utilisateur-list'),
     path('utilisateurs/nouveau/', views.UserCreateView.as_view(), name='utilisateur-create'),
     path('utilisateurs/<int:pk>/', views.UserDetailView.as_view(), name='utilisateur-detail'),
     path('utilisateurs/<int:pk>/modifier/', views.UserCreateView.as_view(), name='utilisateur-update'),

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+{% block title %}Modifier Service - {{ form.instance.nom }}{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Modifier le Service: {{ form.instance.nom }}</h2>
+    </div>
+    <div class="card-body">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="mb-3">
+                <label for="id_nom" class="form-label">Nom</label>
+                {{ form.nom.errors }}
+                {{ form.nom }}
+            </div>
+            <div class="mb-3">
+                <label for="id_description" class="form-label">Description</label>
+                {{ form.description.errors }}
+                {{ form.description }}
+            </div>
+            <div class="mb-3">
+                <label for="id_prix_total" class="form-label">Prix total (FCFA)</label>
+                {{ form.prix_total.errors }}
+                {{ form.prix_total }}
+            </div>
+            <div class="mb-3">
+                <label for="id_commission_laveur" class="form-label">Commission laveur (FCFA)</label>
+                {{ form.commission_laveur.errors }}
+                {{ form.commission_laveur }}
+            </div>
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+            <a href="{% url 'gestion:service-list' %}" class="btn btn-secondary ms-2">Annuler</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
