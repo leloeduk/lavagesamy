@@ -13,14 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
-from dotenv import load_dotenv
-import dj_database_url
-        
+                  # import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# Charge le fichier .env
-load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -90,25 +86,12 @@ WSGI_APPLICATION = 'lavagesamy.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-DATABASE_URL = os.getenv('DATABASE_URL')
 
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
+DATABASES = {
+       'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Fallback en local avec variables séparées
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'lavagesamydb'),
-            'USER': os.getenv('DB_USER', 'lavagesamydb_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', ''),
-            'HOST': os.getenv('DB_HOST', 'localhost'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
-    }
-
     # 'default': dj_database_url.parse(config('DATABASE_URL')),
 
     #  'default': {
@@ -119,7 +102,7 @@ else:
     #     'HOST': 'localhost',
     #     'PORT': '5432',
     # }
-
+}
 
 
 # Password validation
