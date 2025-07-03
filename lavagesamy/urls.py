@@ -19,12 +19,24 @@ from django.urls import path , include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from gestion.views.errors import (
+    custom_permission_denied_view,
+    custom_page_not_found_view,
+    custom_error_view,
+)
+
+
+handler403 = custom_permission_denied_view
+handler404 = custom_page_not_found_view
+handler500 = custom_error_view
 
 urlpatterns = [
     path('', include('core.urls')),
     path('admin/', admin.site.urls),
-    path('gestion/', include('gestion.urls')),
+    path('gestion/', include(('gestion.urls', 'gestion'), namespace='gestion')),
   
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+

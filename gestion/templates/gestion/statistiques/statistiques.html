@@ -1,477 +1,236 @@
-{% extends 'base.html' %}
-{% load static humanize %}
-
-{% block title %}Statistiques{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<style>
-    .card-stat {
-        font-size: 1.75rem;
-        font-weight: 600;
-    }
-    .stat-card {
-        transition: transform 0.3s;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-    }
-    .chart-container {
-        position: relative;
-        height: 300px;
-    }
-    .positive-change {
-        color: #28a745;
-    }
-    .negative-change {
-        color: #dc3545;
-    }
-</style>
-{% endblock %}
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Statistiques - {{ period_name }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1><i class="fas fa-chart-bar me-2"></i>Statistiques - {{ period_name }}</h1>
-        
-        <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" id="periodDropdown" 
-                    data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-calendar-alt me-1"></i> Période
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="periodDropdown">
-                <li><h6 class="dropdown-header">Filtrer par :</h6></li>
-                <li>
-                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#dateModal">
-                        <i class="fas fa-calendar-day me-2"></i>Date spécifique
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#monthModal">
-                        <i class="fas fa-calendar-month me-2"></i>Mois
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#yearModal">
-                        <i class="fas fa-calendar-year me-2"></i>Année
-                    </a>
-                </li>
-                <li><hr class="dropdown-divider"></li>
-                <li>
-                    <a class="dropdown-item" href="{% url 'statistiques' %}">
-                        <i class="fas fa-sync-alt me-2"></i>Réinitialiser
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
 
-    <!-- Cards de Statistiques -->
-    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-4">
-        <div class="col">
-            <div class="card stat-card border-start-primary h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-primary fw-bold">Factures</h6>
-                            <h2 class="card-stat mb-0">{{ stats.factures|intcomma }}</h2>
-                        </div>
-                        <i class="fas fa-file-invoice fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col">
-            <div class="card stat-card border-start-success h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-success fw-bold">Revenu Total</h6>
-                            <h2 class="card-stat mb-0">{{ stats.revenue|intcomma }} FCFA</h2>
-                        </div>
-                        <i class="fas fa-money-bill-wave fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col">
-            <div class="card stat-card border-start-info h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-info fw-bold">Commissions</h6>
-                            <h2 class="card-stat mb-0">{{ stats.commissions|intcomma }} FCFA</h2>
-                        </div>
-                        <i class="fas fa-hand-holding-usd fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col">
-            <div class="card stat-card border-start-warning h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-warning fw-bold">Bénéfice Net</h6>
-                            <h2 class="card-stat mb-0">{{ stats.net_profit|intcomma }} FCFA</h2>
-                        </div>
-                        <i class="fas fa-chart-line fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="mb-4">
+  <form method="get" action="{% url 'gestion:rapport_pdf' %}">
+    <input type="hidden" name="period_type" value="{{ period_type }}">
+    <input type="hidden" name="start_date" value="{{ start_date }}">
+    <input type="hidden" name="end_date" value="{{ end_date }}">
+    <button type="submit" name="report_type" value="daily" class="btn btn-outline-primary me-2">Facture journalière</button>
+    <button type="submit" name="report_type" value="monthly" class="btn btn-outline-primary me-2">Facture mensuelle</button>
+    <button type="submit" name="report_type" value="yearly" class="btn btn-outline-primary">Facture annuelle</button>
+  </form>
+</div>
+<!-- Affichage de la période sélectionnée -->
+<p><strong>Période sélectionnée :</strong> {{ period_name }}</p>
 
-    <!-- Graphiques Principaux -->
-    <div class="row g-4 mb-4">
-        <div class="col-lg-8">
-            <div class="card shadow h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 fw-bold">Activité {% if period_type == 'daily' %}Horaire{% else %}Journalière{% endif %}</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="activityChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-4">
-            <div class="card shadow h-100">
-                <div class="card-header">
-                    <h6 class="m-0 fw-bold">Répartition des Services</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="serviceChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Affichage "Mois en cours : juin" en minuscule -->
+<p><strong>Mois en cours :</strong>
+  {% for month in available_months %}
+    {% if month.value == current_month %}
+      {{ month.name|lower }}
+    {% endif %}
+  {% endfor %}
+</p>
 
-    <!-- Tableaux de Données -->
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card shadow h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 fw-bold">Top Laveurs</h6>
-                    <span class="badge bg-primary">{{ period_name }}</span>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Laveur</th>
-                                    <th class="text-end">Factures</th>
-                                    <th class="text-end">Commission</th>
-                                    <th class="text-end">Moyenne/Facture</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for washer in top_washers %}
-                                <tr>
-                                    <td>{{ washer.nom_complet }}</td>
-                                    <td class="text-end">{{ washer.factures_count }}</td>
-                                    <td class="text-end">{{ washer.total_commission|default:0|floatformat:0|intcomma }} FCFA</td>
-                                    <td class="text-end">{{ washer.avg_per_facture|default:0|floatformat:0|intcomma }} FCFA</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-lg-6">
-            <div class="card shadow h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 fw-bold">Services Populaires</h6>
-                    <span class="badge bg-primary">{{ period_name }}</span>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Service</th>
-                                    <th class="text-end">Factures</th>
-                                    <th class="text-end">Revenu Total</th>
-                                    <th class="text-end">Prix Moyen</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for service in top_services %}
-                                <tr>
-                                    <td>{{ service.nom }}</td>
-                                    <td class="text-end">{{ service.factures_count }}</td>
-                                    <td class="text-end">{{ service.total_revenue|default:0|floatformat:0|intcomma }} FCFA</td>
-                                    <td class="text-end">
-                                        {% if service.factures_count %}
-                                            {{ service.total_revenue|default:0|floatformat:0|intcomma }} FCFA
-                                        {% else %}
-                                            -
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Résumé des statistiques globales -->
+<div class="stats-summary d-flex gap-4 mb-4 flex-wrap">
+  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+    <h6>Total factures</h6>
+    <h3>{{ stats.factures }}</h3>
+  </div>
+  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+    <h6>Revenu total</h6>
+    <h3>{{ stats.revenue|floatformat:0 }} FCFA</h3>
+  </div>
+  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+    <h6>Commissions</h6>
+    <h3>{{ stats.commissions|floatformat:0 }} FCFA</h3>
+  </div>
+  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+    <h6>Bénéfice net</h6>
+    <h3>{{ stats.net_profit|floatformat:0 }} FCFA</h3>
+  </div>
+  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+    <h6>Moyenne par facture</h6>
+    <h3>{{ stats.avg_per_facture|floatformat:2 }} FCFA</h3>
+  </div>
 </div>
 
-<!-- Modals pour les Filtres -->
-<div class="modal fade" id="dateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Choisir une date</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="get">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="specificDate" class="form-label">Date :</label>
-                        <input type="date" class="form-control" id="specificDate" name="specific_date" 
-                               value="{{ specific_date|default:'' }}">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Appliquer</button>
-                </div>
-            </form>
-        </div>
+<div class="container py-3">
+
+  <h2 class="mb-4">{{ period_name }}</h2>
+
+  <!-- 🔎 FILTRAGE DES DONNÉES -->
+  <form method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-sm-4 col-md-3">
+      <label for="specific_date" class="form-label">Date :</label>
+      <input id="specific_date" type="date" name="specific_date" value="{{ specific_date }}" class="form-control">
     </div>
+    <div class="col-sm-4 col-md-3">
+      <label for="month" class="form-label">Mois :</label>
+      <select id="month" name="month" class="form-select">
+        <option value="">-- Tous --</option>
+        {% for month in available_months %}
+        <option value="{{ month.value }}" {% if month.value == current_month %}selected{% endif %}>{{ month.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-sm-4 col-md-3">
+      <label for="year" class="form-label">Année :</label>
+      <select id="year" name="year" class="form-select">
+        <option value="">-- Tous --</option>
+        {% for year in available_years %}
+        <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Filtrer</button>
+      <a href="{% url 'gestion:statistiques' %}" class="btn btn-outline-secondary">Reset</a>
+    </div>
+  </form>
+
+  <!-- 📈 GRAPHIQUES -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-6">
+      <h5>Revenus journaliers</h5>
+      <canvas id="dailyRevenueChart" style="max-height:300px;"></canvas>
+    </div>
+    <div class="col-md-6">
+      <h5>Factures journalières</h5>
+      <canvas id="dailyFacturesChart" style="max-height:300px;"></canvas>
+    </div>
+  </div>
+  <div class="row g-4">
+    <div class="col-md-6">
+      <h5>Répartition commissions (top laveurs)</h5>
+      <canvas id="topLaveursChart" style="max-height:250px;"></canvas>
+    </div>
+    <div class="col-md-6">
+      <h5>Répartition revenus par service</h5>
+      <canvas id="topServicesChart" style="max-height:250px;"></canvas>
+    </div>
+  </div>
+
+  <hr class="my-5">
+
+  <!-- 🧑‍🔧 TABLEAUX DES TOPS -->
+  <div class="row mb-5">
+    <div class="col-lg-6 mb-4">
+      <h4>Top 10 laveurs</h4>
+      <table class="table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th>Laveur</th>
+            <th class="text-end">#Factures</th>
+            <th class="text-end">Commission totale</th>
+            <th class="text-end">Avg/facture</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in top_washers %}
+          <tr>
+            <td>{{ u.get_full_name|default:u.username }}</td>
+            <td class="text-end">{{ u.factures_count }}</td>
+            <td class="text-end">{{ u.total_commission|floatformat:0 }} FCFA</td>
+            <td class="text-end">{{ u.avg_per_facture|floatformat:2 }} FCFA</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="text-center">Aucun résultat</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <h4>Services les plus demandés</h4>
+      <table class="table table-striped table-hover table-sm">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th class="text-end">#Factures</th>
+            <th class="text-end">Revenu</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in top_services %}
+          <tr>
+            <td>{{ s.nom }}</td>
+            <td class="text-end">{{ s.factures_count }}</td>
+            <td class="text-end">{{ s.total_revenue|floatformat:0 }} FCFA</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="text-center">Aucun résultat</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </div>
 
-<div class="modal fade" id="monthModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Choisir un mois</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="get">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="monthSelect" class="form-label">Mois :</label>
-                            <select class="form-select" id="monthSelect" name="month">
-                                {% for month in available_months %}
-                                <option value="{{ month.value }}" {% if month.value == current_month|add:0 %}selected{% endif %}>
-                                    {{ month.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="yearSelect" class="form-label">Année :</label>
-                            <select class="form-select" id="yearSelect" name="year">
-                                {% for year in available_years %}
-                                <option value="{{ year }}" {% if year == current_year|add:0 %}selected{% endif %}>
-                                    {{ year }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Appliquer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="yearModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Choisir une année</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="get">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="yearSelectModal" class="form-label">Année :</label>
-                        <select class="form-select" id="yearSelectModal" name="year">
-                            {% for year in available_years %}
-                            <option value="{{ year }}" {% if year == current_year|add:0 %}selected{% endif %}>
-                                {{ year }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary">Appliquer</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
+<!-- 🔧 CHART.JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
-<!-- 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Configuration de Flatpickr pour la date
-    flatpickr("#specificDate", {
-        dateFormat: "Y-m-d",
-        locale: "fr",
-        maxDate: "today"
-    });
+  const dates = [
+    {% for item in daily_stats %}"{{ item.date }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  const revenues = [
+    {% for item in daily_stats %}{{ item.revenue|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  const counts = [
+    {% for item in daily_stats %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  const washers = [
+    {% for u in top_washers %}"{{ u.get_full_name|default:u.username }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  const washersCommission = [
+    {% for u in top_washers %}{{ u.total_commission|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  const services = [
+    {% for s in top_services %}"{{ s.nom }}"{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
+  const servicesRevenue = [
+    {% for s in top_services %}{{ s.total_revenue|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}
+  ];
 
-    // Données pour les graphiques
-    const activityData = {
-        labels: [
-            {% if period_type == 'daily' %}
-                {% for hour in range(8, 20) %}"{{ hour }}h"{% if not loop.last %}, {% endif %}{% endfor %}
-            {% else %}
-                {% for day in daily_stats %}"{{ day.date|date:'d/m' }}"{% if not forloop.last %}, {% endif %}{% endfor %}
-            {% endif %}
-        ],
-        datasets: [{
-            label: 'Nombre de Factures',
-            data: [
-                {% if period_type == 'daily' %}
-                    {% for hour in range(8, 20) %}
-                        {{ Facture.objects.filter(date_heure__hour=hour, date_heure__date=start_date).count() }},
-                    {% endfor %}
-                {% else %}
-                    {% for day in daily_stats %}{{ day.count }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                {% endif %}
-            ],
-            backgroundColor: 'rgba(78, 115, 223, 0.5)',
-            borderColor: 'rgba(78, 115, 223, 1)',
-            borderWidth: 1
-        }, {
-            label: 'Revenu (k FCFA)',
-            data: [
-                {% if period_type == 'daily' %}
-                    {% for hour in range(8, 20) %}
-                        {{ Facture.objects.filter(date_heure__hour=hour, date_heure__date=start_date).aggregate(total=Sum('montant_total'))['total']|default:0|floatformat:0 }},
-                    {% endfor %}
-                {% else %}
-                    {% for day in daily_stats %}{{ day.revenue|floatformat:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                {% endif %}
-            ],
-            backgroundColor: 'rgba(28, 200, 138, 0.5)',
-            borderColor: 'rgba(28, 200, 138, 1)',
-            borderWidth: 1,
-            yAxisID: 'y1'
-        }]
-    };
+  new Chart(document.getElementById('dailyRevenueChart'), {
+    type: 'bar',
+    data: { labels: dates, datasets: [{label: 'Revenu (FCFA)', data: revenues, backgroundColor: 'rgba(54,162,235,0.6)'}] },
+    options: { responsive: true, scales: { y: { beginAtZero:true } } }
+  });
+  new Chart(document.getElementById('dailyFacturesChart'), {
+    type: 'line',
+    data: { labels: dates, datasets: [{label: 'Factures', data: counts, borderColor: 'rgba(75,192,192,1)', fill:false, tension:0.2}] },
+    options: { responsive: true }
+  });
+  new Chart(document.getElementById('topLaveursChart'), {
+    type: 'pie',
+    data: { labels: washers, datasets:[{data: washersCommission, backgroundColor:[
+      '#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#B2FF59','#FF5252','#536DFE','#8C9EFF'
+    ]}]},
+    options: { responsive: true }
+  });
+  new Chart(document.getElementById('topServicesChart'), {
+    type: 'doughnut',
+    data: { labels: services, datasets:[{data: servicesRevenue, backgroundColor:[
+      '#2962FF','#00C853','#FFD600','#D50000','#AA00FF','#0091EA','#FF6D00','#00B8D4','#C51162','#DD2C00'
+    ]}]},
+    options: { responsive: true }
+  });
+</script>
 
-    const serviceData = {
-        labels: [
-            {% for service in top_services %}"{{ service.nom }}"{% if not forloop.last %}, {% endif %}{% endfor %}
-        ],
-        datasets: [{
-            data: [
-                {% for service in top_services %}{{ service.factures_count }}{% if not forloop.last %}, {% endif %}{% endfor %}
-            ],
-            backgroundColor: [
-                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796', '#f8f9fc'
-            ],
-            hoverBorderColor: "#fff"
-        }]
-    };
+<style>
+  /* Pour des petits cards statistiques plus propres et responsives */
+  .stat-card h6 {
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.3rem;
+  }
+  .stat-card h3 {
+    font-weight: 700;
+    color: #0d6efd;
+  }
+  /* Gestion responsive petits tableaux */
+  @media (max-width: 768px) {
+    .stats-summary {
+      flex-direction: column;
+    }
+  }
+</style>
 
-    // Initialisation des graphiques
-    new Chart(document.getElementById('activityChart'), {
-        type: 'bar',
-        data: activityData,
-        options: {
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Nombre de Factures'
-                    }
-                },
-                y1: {
-                    beginAtZero: true,
-                    position: 'right',
-                    grid: {
-                        drawOnChartArea: false
-                    },
-                    title: {
-                        display: true,
-                        text: 'Revenu (FCFA)'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return (value / 1000) + 'k';
-                        }
-                    }
-                }
-            },
-            plugins: {
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label.includes('Revenu')) {
-                                label += ': ' + context.raw.toLocaleString() + ' FCFA';
-                            } else {
-                                label += ': ' + context.raw;
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    new Chart(document.getElementById('serviceChart'), {
-        type: 'doughnut',
-        data: serviceData,
-        options: {
-            maintainAspectRatio: false,
-            cutout: '70%',
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 15
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
-});
-</script> -->
 {% endblock %}

@@ -26,7 +26,7 @@
         <a href="{% url 'gestion:service-list' %}" class="btn btn-secondary">Retour à la liste</a>
         {% if request.user.role == 'admin' %}
             <a href="{% url 'gestion:service-update' service.pk %}" class="btn btn-primary">Modifier</a>
-            <a href="{% url 'gestion:confirm_delete' service.pk %}" class="btn btn-danger">Supprimer</a>
+            <a href="{% url 'gestion:service-delete' service.pk %}" class="btn btn-danger">Supprimer</a>
         {% endif %}
     </div>
 </div>

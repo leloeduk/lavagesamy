@@ -35,7 +35,7 @@ class Facture(models.Model):
     numero_facture = models.CharField(max_length=20, unique=True)
     nom_client = models.CharField(max_length=100, blank=True)
     auteur = models.ForeignKey(User, related_name="factures_creees", on_delete=models.PROTECT)
-    service = models.ForeignKey(Service, on_delete=models.PROTECT)
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True)
     laveur = models.ForeignKey(
         User,
         related_name="factures_realisees",
@@ -65,7 +65,7 @@ class Facture(models.Model):
         if not self.numero_facture:
             date_part = timezone.now().strftime("%Y%m%d")
             unique_part = uuid.uuid4().hex[:6].upper()
-            self.numero_facture = f"SAMY_AUTO-Facture-{date_part}-{unique_part}"
+            self.numero_facture = f"SAMY_Services{date_part}-{unique_part}"
 
         # 💡 Logique ajoutée
         self.montant_total = self.montant

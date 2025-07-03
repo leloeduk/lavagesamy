@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Service Indisponible (503){% endblock %}
+
+{% block content %}
+<div class="text-center my-5">
+  <h1 class="display-1 text-danger">503</h1>
+  <h2>Service Indisponible</h2>
+ <p class="lead">⛔
+    Le service est temporairement indisponible.<br>
+    Merci de réessayer dans quelques instants.
+  </p>
+  <a href="{% url 'home' %}" class="btn btn-primary mt-3">Retour à l'accueil</a>
+</div>
+{% endblock %}

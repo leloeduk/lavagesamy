@@ -52,7 +52,7 @@
     <a href="{% url 'gestion:service-update' service.id %}" class="btn btn-sm btn-info" title="Modifier">
         <i class="fas fa-edit"></i>
     </a>
-    <a href="{% url 'gestion:confirm_delete' service.id %}" class="btn btn-sm btn-danger" title="Supprimer"
+    <a href="{% url 'gestion:service-delete' service.id %}" class="btn btn-sm btn-danger" title="Supprimer"
        onclick="return confirm('Confirmer la suppression de ce service ?')">
         <i class="fas fa-trash-alt"></i>
     </a>
