@@ -30,7 +30,7 @@ class FactureCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     success_url = reverse_lazy('gestion:facture-list')
 
     def test_func(self):
-        return self.request.user.role in ['admin', 'caissier']
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     def form_valid(self, form):
         form.instance.auteur = self.request.user
@@ -67,7 +67,7 @@ class FactureUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     success_url = reverse_lazy('gestion:facture-list')
 
     def test_func(self):
-        return self.request.user.role in ['admin', 'caissier']
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     def form_valid(self, form):
         service = form.cleaned_data['service']
@@ -90,7 +90,7 @@ class FactureDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     success_url = reverse_lazy('gestion:facture-list')
 
     def test_func(self):
-        return self.request.user.role in ['admin', 'caissier']
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     def delete(self, request, *args, **kwargs):
         messages.success(request, "🗑️ Facture supprimée avec succès.")

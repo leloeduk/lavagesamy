@@ -53,44 +53,18 @@
                         </div>
 
                         <!-- Montant, Commission, Part entreprise -->
-<div class="row g-3 mb-3">
-    <div class="col-md-3">
+<div class=" mb-2">
+    <div>
         <label for="{{ form.montant.id_for_label }}" class="form-label fw-semibold">Montant</label>
         <div class="input-group">
-            {% render_field form.montant class="form-control" placeholder="Montant de base" %}
+            {% render_field form.montant class="form-control" placeholder="Montant de base ex: 2000" %}
             <span class="input-group-text">FCFA</span>
         </div>
         {% if form.montant.errors %}
             <div class="invalid-feedback d-block">{{ form.montant.errors|striptags }}</div>
         {% endif %}
     </div>
-    <div class="col-md-3">
-        <label for="{{ form.montant_total.id_for_label }}" class="form-label fw-semibold">Montant Total</label>
-        <div class="input-group">
-            {% render_field form.montant_total class="form-control" placeholder="10000" %}
-            <span class="input-group-text">FCFA</span>
-        </div>
-        {% if form.montant_total.errors %}
-            <div class="invalid-feedback d-block">{{ form.montant_total.errors|striptags }}</div>
-        {% endif %}
-    </div>
-    <div class="col-md-3">
-        <label for="{{ form.commission_laveur.id_for_label }}" class="form-label fw-semibold">Commission Laveur</label>
-        <div class="input-group">
-            {% render_field form.commission_laveur class="form-control" placeholder="2000" %}
-            <span class="input-group-text">FCFA</span>
-        </div>
-        {% if form.commission_laveur.errors %}
-            <div class="invalid-feedback d-block">{{ form.commission_laveur.errors|striptags }}</div>
-        {% endif %}
-    </div>
-    <div class="col-md-3">
-        <label for="part_entreprise" class="form-label fw-semibold">Part Entreprise</label>
-        <div class="input-group">
-            <input type="text" readonly class="form-control" id="part_entreprise" value="{{ form.instance.part_entreprise|default:0 }}">
-            <span class="input-group-text">FCFA</span>
-        </div>
-    </div>
+    
 </div>
     
 

@@ -10,7 +10,7 @@ class StatistiquesView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gestion/statistiques/statistiques.html'
 
     def test_func(self):
-        return self.request.user.role in ['admin', 'superviseur']
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     def get_date_filters(self):
         today = timezone.localdate()

@@ -62,14 +62,10 @@
                         </td>
                         <td>{{ facture.date_heure|date:"d/m/Y H:i" }}</td>
                         <td class="text-center">
-                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                            <div class="d-flex flex-wrap gap-1 justify-content-between">
                                 <a href="{% url 'gestion:facture-detail' facture.pk %}" class="btn btn-sm btn-info" title="Détails">
-                                    <i class="fas fa-eye">Voir la</i>
-                                </a>
-                                <a href="{% url 'gestion:facture-pdf' facture.pk %}" class="btn btn-sm btn-secondary" title="Télécharger PDF">
-                                    <i class="fas fa-file-pdf">Télécharger le PDF</i>
-                                </a>
-                                {% if request.user.role == 'admin' %}
+                                    Voir les détails </a>
+                                <!-- {% if request.user.role == 'admin' %}
                                     <a href="{% url 'gestion:facture-update' facture.pk %}" class="btn btn-sm btn-warning" title="Modifier">
                                         <i class="fas fa-edit">Modifier</i>
                                     </a>
@@ -79,9 +75,9 @@
                                 {% endif %}
                                 {% if facture.statut != 'payé' %}
                                     <a href="#" class="btn btn-sm btn-success" title="Marquer comme payé">
-                                        <i class="fas fa-check-circle"></i>
+                                        <i class="fas fa-check-circle">Non payé</i>
                                     </a>
-                                {% endif %}
+                                {% endif %} -->
                             </div>
                         </td>
                     </tr>

@@ -12,7 +12,7 @@ from django.db.models import Sum, Count, F, Case, When, FloatField, Q
 
 
 def is_admin_or_supervisor(user):
-    return user.is_authenticated and user.role in ['admin', 'superviseur']
+    return user.is_authenticated and user.role in ['admin', 'superviseur' , 'caissier']
 
 
 @login_required

@@ -19,7 +19,7 @@ class ServiceCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     success_url = reverse_lazy('gestion:service-list')
 
     def test_func(self):
-        return self.request.user.role == 'admin'
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -43,7 +43,7 @@ class ServiceUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     success_url = reverse_lazy('gestion:service-list')
 
     def test_func(self):
-        return self.request.user.role == 'admin'
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -56,7 +56,7 @@ class ServiceDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     success_url = reverse_lazy('gestion:service-list')
 
     def test_func(self):
-        return self.request.user.role == 'admin'
+        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
 
     @transaction.atomic
     def delete(self, request, *args, **kwargs):
