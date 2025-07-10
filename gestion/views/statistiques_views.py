@@ -5,12 +5,13 @@ from django.db.models import Sum, Count, F, Case, When, FloatField, Q
 from datetime import datetime, timedelta
 from gestion.models import Facture, Service
 from core.models import User
+import calendar
 
 class StatistiquesView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'gestion/statistiques/statistiques.html'
 
     def test_func(self):
-        return self.request.user.role in ['admin', 'superviseur' , 'caissier']
+        return self.request.user.role in ['admin','superviseur','caissier']
 
     def get_date_filters(self):
         today = timezone.localdate()
@@ -110,14 +111,24 @@ class StatistiquesView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         start_date, end_date, period_name, period_type = self.get_date_filters()
         factures = Facture.objects.filter(date_heure__range=(start_date, end_date))
 
+        today = timezone.localdate()
+        current_month = today.month
+        current_year = today.year
+        month_names = [(i, calendar.month_name[i].capitalize()) for i in range(1, 13)]
+
         stats = factures.aggregate(
             total_factures=Count('id'),
             total_revenue=Sum('montant_total'),
             total_commissions=Sum('commission_laveur'),
             net_profit=Sum(F('montant_total') - F('commission_laveur'))
         )
+        
 
         context.update({
+            'today': today,
+            'current_month': current_month,
+            'current_year': current_year,
+            'month_names': month_names,
             'period_name': period_name,
             'period_type': period_type,
             'start_date': start_date.date(),

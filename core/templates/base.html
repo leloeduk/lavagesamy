@@ -30,12 +30,12 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{% url 'gestion:dashboard' %}">
                 <img src="{% static 'core/images/logo.png' %}" 
-                     alt="Logo Lavage Samy Auto" 
+                     alt="Logo Lavage Samy Services" 
                      width="40" 
                      height="40"
                      class="d-inline-block align-top me-2"
                      loading="lazy">
-                <span class="fw-bold">Lavage Samy Auto</span>
+                <span class="fw-bold">Lavage Samy Services</span>
             </a>
             
             <button class="navbar-toggler" type="button" 
@@ -84,8 +84,23 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow">
                             <li>
-                                <a class="dropdown-item" href="#">
-                                    <i class="bi bi-person me-2"></i> Profil
+                             <a class="dropdown-item" href="{% url 'gestion:utilisateur-update' user.pk %}">
+    <i class="bi bi-person me-2"></i> Profil
+</a>
+                            </li>
+                             <li>
+                                <a class="dropdown-item" href="{% url 'gestion:dashboard' %}">
+                                    <i class="bi bi-speedometer2 me-1"></i> Dashboard
+                                </a>
+                            </li>
+                              <li>
+                                <a class="dropdown-item" href="{% url 'gestion:facture-list' %}">
+                                    <i class="bi bi-receipt me-1"></i> Factures
+                                </a>
+                            </li>
+                               <li>
+                                <a class="dropdown-item" href="{% url 'gestion:service-list' %}">
+                                    <i class="bi bi-receipt me-1"></i> Services
                                 </a>
                             </li>
                             <li>
@@ -143,22 +158,34 @@
     </main>
 
     <!-- Footer -->
-  <footer class="py-4 mt-auto" style="background-color: #0a2d5a; color: white;">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-center text-md-start">
-                    <p class="mb-0 small">
-                        &copy; {% now "Y" %} Lavage Samy Auto. Tous droits réservés.
-                    </p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <p class="mb-0 small">
-                        Version {{ APP_VERSION }}
-                    </p>
-                </div>
-            </div>
-        </div>
-    </footer>
+ <footer class="py-4 mt-auto" style="background-color: #0a2d5a; color: white;">
+  <div class="container">
+    <div class="row align-items-center gy-2">
+      
+      <!-- Texte gauche -->
+      <div class="col-md-4 text-center text-md-start">
+        <p class="mb-0 small">&copy; {% now "Y" %} Lavage Samy Services. Tous droits réservés.</p>
+      </div>
+      
+      <!-- Texte version au centre -->
+      <div class="col-md-4 text-center">
+        <p class="mb-0 small">Version {{ APP_VERSION }}</p>
+      </div>
+
+      <!-- Texte droite avec lien -->
+      <div class="col-md-4 text-center text-md-end">
+        <p class="mb-0 small">
+          Développé par 
+          <a href="https://github.com/leloeduk" target="_blank" rel="noopener noreferrer" class="text-white text-decoration-underline fw-semibold">
+            Leloeduk
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</footer>
+
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

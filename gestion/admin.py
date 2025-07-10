@@ -19,3 +19,8 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('username', 'role', 'is_staff')
     list_filter = ('role',)
     search_fields = ('username', 'email')
+
+
+admin.site.site_header = "Lavage Samy Administration"
+admin.site.site_title = "Lavage Samy Admin"
+admin.site.index_title = "Bienvenue sur le panneau d'administration"

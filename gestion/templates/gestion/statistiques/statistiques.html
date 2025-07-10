@@ -4,18 +4,9 @@
 
 {% block content %}
 
-<div class="mb-4">
-  <form method="get" action="{% url 'gestion:rapport_pdf' %}">
-    <input type="hidden" name="period_type" value="{{ period_type }}">
-    <input type="hidden" name="start_date" value="{{ start_date }}">
-    <input type="hidden" name="end_date" value="{{ end_date }}">
-    <button type="submit" name="report_type" value="daily" class="btn btn-outline-primary me-2">Facture journalière</button>
-    <button type="submit" name="report_type" value="monthly" class="btn btn-outline-primary me-2">Facture mensuelle</button>
-    <button type="submit" name="report_type" value="yearly" class="btn btn-outline-primary">Facture annuelle</button>
-  </form>
-</div>
 <!-- Affichage de la période sélectionnée -->
-<p><strong>Période sélectionnée :</strong> {{ period_name }}</p>
+<p><strong>Période sélectionnée : </strong>
+   {{ period_name }}</p>
 
 <!-- Affichage "Mois en cours : juin" en minuscule -->
 <p><strong>Mois en cours :</strong>
@@ -28,27 +19,68 @@
 
 <!-- Résumé des statistiques globales -->
 <div class="stats-summary d-flex gap-4 mb-4 flex-wrap">
-  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+  <div class="  text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px; background-color: #0a2d5a; color: white;">
     <h6>Total factures</h6>
     <h3>{{ stats.factures }}</h3>
   </div>
-  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+  <div class="  text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px; background-color: #0a2d5a; color: white;">
     <h6>Revenu total</h6>
     <h3>{{ stats.revenue|floatformat:0 }} FCFA</h3>
   </div>
-  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+  <div class="  text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px; background-color: #0a2d5a; color: white;">
     <h6>Commissions</h6>
     <h3>{{ stats.commissions|floatformat:0 }} FCFA</h3>
   </div>
-  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+  <div class="  text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px; background-color: #0a2d5a; color: white">
     <h6>Bénéfice net</h6>
     <h3>{{ stats.net_profit|floatformat:0 }} FCFA</h3>
   </div>
-  <div class="stat-card bg-light text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;">
+  <div class="  text-center p-3 rounded shadow-sm flex-fill" style="min-width: 150px;background-color: #0a2d5a; color: white">
     <h6>Moyenne par facture</h6>
     <h3>{{ stats.avg_per_facture|floatformat:2 }} FCFA</h3>
   </div>
 </div>
+
+<div class="pdf-buttons mt-3">
+  <h6 class="mb-2">Générer un PDF</h6>
+
+  <div class="row gx-2 gy-2">
+
+    <!-- Rapport JOUR -->
+    <div class="col-12 col-md-4">
+      <form method="get" action="{% url 'gestion:rapport_statistiques_jour_pdf' %}" class="d-flex flex-column gap-1 p-2 border rounded bg-light shadow-sm">
+        <label class="form-label mb-0 small">Jour :</label>
+        <input type="date" name="specific_date" class="form-control form-control-sm" value="{{ today|date:'Y-m-d' }}" required>
+        <button class="btn btn-sm btn-primary w-100">PDF Jour</button>
+      </form>
+    </div>
+
+    <!-- Rapport MOIS -->
+    <div class="col-12 col-md-4">
+      <form method="get" action="{% url 'gestion:rapport_statistiques_mois_pdf' %}" class="d-flex flex-column gap-1 p-2 border rounded bg-light shadow-sm">
+     <label for="month">Mois :</label>
+<select name="month" id="month" class="form-select form-select-sm" required>
+  {% for m, name in month_names %}
+    <option value="{{ m }}" {% if m == current_month %}selected{% endif %}>{{ name }}</option>
+  {% endfor %}
+</select>
+        <input type="number" name="year" class="form-control form-control-sm" value="{{ current_year }}" min="2000" max="2100" required>
+        <button class="btn btn-sm btn-primary w-100">PDF Mois</button>
+      </form>
+    </div>
+
+    <!-- Rapport ANNÉE -->
+    <div class="col-12 col-md-4">
+      <form method="get" action="{% url 'gestion:rapport_statistiques_annee_pdf' %}" class="d-flex flex-column gap-1 p-2 border rounded bg-light shadow-sm">
+        <label class="form-label mb-0 small">Année :</label>
+        <input type="number" name="year" class="form-control form-control-sm" value="{{ current_year }}" min="2000" max="2100" required>
+        <button class="btn btn-sm btn-primary w-100">PDF Année</button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
 
 <div class="container py-3">
 

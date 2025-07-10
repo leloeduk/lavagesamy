@@ -1,7 +1,18 @@
 from django.urls import path
 
+from gestion.views.rapport_pdf_jour import StatistiquePDFJourView
 from gestion.views.rapport_statistiques_pdf import rapport_statistiques_pdf_view
-from .views import dashboard_views, facture_views, service_views, statistiques_views, user_views, pdf_views
+from .views import dashboard_views, facture_views, service_views, statistiques_views, pdf_views 
+from gestion.views.rapport_statistiques_pdf_annee import rapport_statistiques_pdf_annee
+from gestion.views.rapport_statistiques_pdf_mois import rapport_statistiques_pdf_mois
+from gestion.views.user_views import (
+    UserListView,
+
+    UserUpdateView,
+    UserDeleteView,
+)
+
+
 
 app_name = 'gestion'
 
@@ -29,12 +40,15 @@ urlpatterns = [
     # Statistiques
     path('statistiques/', statistiques_views.StatistiquesView.as_view(), name='statistiques'),
     path('statistiques/rapport/pdf/', rapport_statistiques_pdf_view, name='rapport_pdf'),
+    path('statistiques/pdf/jour/', StatistiquePDFJourView.as_view(), name='rapport_statistiques_jour_pdf'),
+    path('statistiques/pdf/mois/', rapport_statistiques_pdf_mois, name='rapport_statistiques_mois_pdf'),
+    path('statistiques/pdf/annee/', rapport_statistiques_pdf_annee, name='rapport_statistiques_annee_pdf'),
+
 
     
 
     # Utilisateurs
-    path('utilisateurs/', user_views.UserListView.as_view(), name='utilisateur-list'),
-    path('utilisateurs/create/', user_views.UserCreateView.as_view(), name='utilisateur-create'),
-    path('utilisateurs/<int:pk>/', user_views.UserDetailView.as_view(), name='utilisateur-detail'),
-    path('utilisateurs/<int:pk>/delete/', user_views.UserDeleteView.as_view(), name='utilisateur-delete'),
+    path('utilisateurs/',UserListView.as_view(), name='utilisateur-list'),
+    path('utilisateurs/<int:pk>/update/',UserUpdateView.as_view(), name='utilisateur-update'),
+    path('utilisateurs/<int:pk>/delete/',UserDeleteView.as_view(), name='utilisateur-delete'),
 ]

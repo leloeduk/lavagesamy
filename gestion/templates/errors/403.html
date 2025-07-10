@@ -1,0 +1,16 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accès interdit - 403</title>
+    <link rel="stylesheet" href="{% static 'core/css/errors.css' %}">
+</head>
+<body>
+    <div class="error-container">
+        <h1>403</h1>
+      <p class="lead">⛔Vous n'avez pas la permission d'accéder à cette page.</p>
+        <a href="{% url 'gestion:dashboard' %}">Retour à l'accueil</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+{% load static %}
+{% load math_filters %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Rapport Statistiques - {{ period_name }}</title>
+    <link rel="stylesheet" href="{% static 'core/css/pdf.css' %}" />
+</head>
+<body>
+
+<img src="{% static 'core/images/logo.png' %}" alt="Logo" class="watermark" />
+
+<header>
+    <div><img src="{% static 'core/images/logo.png' %}" alt="Logo" class="logo" /></div>
+    <div class="invoice-info">
+        <h1>Rapport Statistiques - Année</h1>
+        <p>Période : {{ period_name }}</p>
+        <p>Date génération : {{ now|date:"d/m/Y H:i" }}</p>
+    </div>
+</header>
+
+<section>
+    <h3>Résumé Global de l'Année</h3>
+    <table>
+        <tbody>
+            <tr><th>Total factures</th><td>{{ stats.total_factures|default:"0" }}</td></tr>
+            <tr><th>Revenu total (FCFA)</th><td>{{ stats.total_revenue|default:"0" }}</td></tr>
+            <tr><th>Commissions (FCFA)</th><td>{{ stats.total_commissions|default:"0" }}</td></tr>
+            <tr><th>Bénéfice net (FCFA)</th><td>{{ stats.net_profit|default:"0" }}</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h3>Statistiques Mensuelles</h3>
+    <table>
+        <thead>
+            <tr><th>Mois</th><th># Factures</th><th>Revenu (FCFA)</th></tr>
+        </thead>
+        <tbody>
+            {% for m in monthly_stats %}
+            <tr>
+                <td>{{ m.month }}</td>
+                <td>{{ m.count }}</td>
+                <td>{{ m.total }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" style="text-align:center">Aucune donnée</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h3>Top 10 Laveurs</h3>
+    <table>
+        <thead>
+            <tr><th>Laveur</th><th># Factures</th><th>Commission totale (FCFA)</th><th>Moyenne par facture (FCFA)</th></tr>
+        </thead>
+        <tbody>
+            {% for u in top_washers %}
+            <tr>
+                <td>{{ u.get_full_name|default:u.username }}</td>
+                <td>{{ u.factures_count }}</td>
+                <td>{{ u.total_commission|default:"0" }}</td>
+                <td>{{ u.avg_per_facture|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center">Aucun résultat</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h3>Top Services</h3>
+    <table>
+        <thead>
+            <tr><th>Service</th><th># Factures</th><th>Revenu total (FCFA)</th></tr>
+        </thead>
+        <tbody>
+            {% for s in top_services %}
+            <tr>
+                <td>{{ s.nom }}</td>
+                <td>{{ s.factures_count }}</td>
+                <td>{{ s.total_revenue|default:"0" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" style="text-align:center">Aucun résultat</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+</body>
+</html>
