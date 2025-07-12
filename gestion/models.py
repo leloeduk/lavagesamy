@@ -18,6 +18,9 @@ class Service(models.Model):
 
     def __str__(self):
         return f"{self.nom} - {self.prix_total} FCFA"
+    @property
+    def part_entreprise(self):
+        return self.prix_total - self.commission_laveur
 
 class Facture(models.Model):
     STATUTS = (
@@ -73,6 +76,9 @@ class Facture(models.Model):
         self.part_entreprise = self.montant_total - self.commission_laveur
 
         super().save(*args, **kwargs)
+        
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}".strip() or self.username
 
     def __str__(self):
         return f"Facture {self.numero_facture} - {self.get_statut_display()}"

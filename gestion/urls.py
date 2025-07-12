@@ -7,7 +7,6 @@ from gestion.views.rapport_statistiques_pdf_annee import rapport_statistiques_pd
 from gestion.views.rapport_statistiques_pdf_mois import rapport_statistiques_pdf_mois
 from gestion.views.user_views import (
     UserListView,
-
     UserUpdateView,
     UserDeleteView,
 )

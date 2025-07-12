@@ -36,9 +36,9 @@
                             <td>{{ service.prix_total|floatformat:0 }}</td>
                             <td>{{ service.commission_laveur|floatformat:0 }}</td>
                           <td>
-    <span id="part-entreprise-{{ service.id }}">
-        {{ service.prix_total|floatformat:0 }}
-    </span>
+   <span id="part-entreprise-{{ service.id }}">
+    {{ service.part_entreprise|floatformat:0 }}
+</span>
     <!-- <script>
         document.getElementById('part-entreprise-{{ service.id }}').textContent =
             { service.prix_total } - { service.commission_laveur };

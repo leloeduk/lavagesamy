@@ -33,13 +33,17 @@ class FactureForm(forms.ModelForm):
             'montant': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),  # ✅ Widget propre
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['laveur'].queryset = User.objects.filter(role='laveur')
-        self.fields['service'].queryset = Service.objects.all()
-    
-    def clean_numero_facture(self):
-        numero = self.cleaned_data['numero_facture']
-        if Facture.objects.filter(numero_facture=numero).exists():
-            raise forms.ValidationError("Ce numéro de facture existe déjà")
-        return numero
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            self.fields['laveur'].queryset = User.objects.filter(role='laveur')
+            self.fields['service'].queryset = Service.objects.all()
+
+            # Préremplir le montant si un service est sélectionné
+            service_id = self.data.get('service') or self.initial.get('service')
+            if service_id:
+                try:
+                    service = Service.objects.get(pk=service_id)
+                    self.fields['montant'].initial = service.prix_total
+                except Service.DoesNotExist:
+                    pass
