@@ -1,1 +1,1 @@
-web: gunicorn lavagesamy.wsgi --log-file -
+web: python manage.py collectstatic --noinput && gunicorn lavagesamy.wsgi --log-file -
