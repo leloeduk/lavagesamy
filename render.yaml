@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: django-app
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn lavagesamy.wsgi --log-file -"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lavagesamydb
+          property: connectionString
+      - key: SECRET_KEY
+        value: django-insecure-mevowfb50v4&8%ftb+5+c1xv#+9j$_l%c!p7nuy_@dxj$##i$2
+      - key: DEBUG
+        value: "False"
+
+databases:
+  - name: lavagesamydb
+    plan: free
+    region: oregon
+    postgresMajorVersion: 15
+
+envVars:
+  - key: DATABASE_URL
+    fromDatabase:
+      name: lavagesamydb
+      property: connectionString
