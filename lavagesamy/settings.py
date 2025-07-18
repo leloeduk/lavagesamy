@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from decouple import config
 import os
+import dj_database_url
+from whitenoise.storage import CompressedManifestStaticFilesStorage
+from dotenv import load_dotenv
+load_dotenv()
                   # import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,14 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-mevowfb50v4&8%ftb+5+c1xv#+9j$_l%c!p7nuy_@dxj$##i$2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # SECRET_KEY = config('SECRET_KEY')
 # DEBUG = config('DEBUG', cast=bool)
 # ALLOWED_HOSTS = ["*"]
 
-DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','lavagesamy.onrender.com','*']
 
@@ -88,11 +90,19 @@ WSGI_APPLICATION = 'lavagesamy.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#        'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+
 DATABASES = {
-       'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True  # Pour Render, SSL est requis
+    )
+}
     # 'default': dj_database_url.parse(config('DATABASE_URL')),
 
     #  'default': {
@@ -103,7 +113,7 @@ DATABASES = {
     #     'HOST': 'localhost',
     #     'PORT': '5432',
     # }
-}
+# }
 
 
 # Password validation
@@ -164,12 +174,10 @@ LOGOUT_REDIRECT_URL = 'login'
 # STATICFILES_DIRS = []
 
 STATIC_URL = '/static/'
-
 # Ce répertoire contiendra tous tes fichiers statiques personnalisés pendant le développement
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
-
 # Pour la production (collectstatic va mettre tous les fichiers ici)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -183,6 +191,11 @@ AUTH_USER_MODEL = 'core.User'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
