@@ -13,8 +13,9 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
-from decouple import config
-
+from whitenoise.storage import CompressedManifestStaticFilesStorage
+from dotenv import load_dotenv
+load_dotenv()
                   # import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -28,17 +29,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-mevowfb50v4&8%ftb+5+c1xv#+9j$_l%c!p7nuy_@dxj$##i$2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# SECRET_KEY = config('SECRET_KEY')
-# DEBUG = config('DEBUG', cast=bool)
-# ALLOWED_HOSTS = ["*"]
 
-DEBUG = False
 
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    
+DEBUG = True
+
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','lavagesamy.onrender.com','*']
 
 
@@ -97,11 +91,23 @@ WSGI_APPLICATION = 'lavagesamy.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL'),  # Utilisez config() au lieu de os.getenv()
+        default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
-        ssl_require=True
+        ssl_require=True  # Pour Render, SSL est requis
     )
 }
+    # 'default': dj_database_url.parse(config('DATABASE_URL')),
+
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'lavagesamydb',
+    #     'USER': 'lavagesamydb_user',
+    #     'PASSWORD': 'ikEWVcSddmpjBMg2LCdfYh6edkwWo6Ph',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -141,15 +147,6 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
-# Configurer l'envoi d'emails (pour la réinitialisation de mot de passe)
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.votre-fournisseur.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'votre@email.com'
-# EMAIL_HOST_PASSWORD = 'votre-mot-de-passe'
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 
 # Fichiers statiques
