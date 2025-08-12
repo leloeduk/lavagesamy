@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
 import os
+import dj_database_url
 from whitenoise.storage import CompressedManifestStaticFilesStorage
+from dotenv import load_dotenv
+load_dotenv()
+                  # import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,7 +31,7 @@ SECRET_KEY = 'django-insecure-mevowfb50v4&8%ftb+5+c1xv#+9j$_l%c!p7nuy_@dxj$##i$2
 # SECURITY WARNING: don't run with debug turned on in production!
 
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','lavagesamy.onrender.com','*']
 
@@ -87,11 +90,23 @@ WSGI_APPLICATION = 'lavagesamy.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-       'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True  # Pour Render, SSL est requis
+    )
+}
+    # 'default': dj_database_url.parse(config('DATABASE_URL')),
 
+    #  'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'lavagesamydb',
+    #     'USER': 'lavagesamydb_user',
+    #     'PASSWORD': 'ikEWVcSddmpjBMg2LCdfYh6edkwWo6Ph',
+    #     'HOST': 'localhost',
+    #     'PORT': '5432',
+    # }
+# }
 
 
 # Password validation
