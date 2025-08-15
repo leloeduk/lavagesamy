@@ -20,7 +20,7 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
 class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailView):
     model = User
-    template_name = 'gestion/utilisateurs/detail_update.html'
+    template_name = 'gestion/utilisateurs/update.html'
     context_object_name = 'user_detail'
     form_class = CustomUserUpdateForm
 
@@ -28,7 +28,7 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, FormMixin, DetailV
         return self.request.user.role in ['admin','superviseur','caissier', 'laveur']
 
     def get_success_url(self):
-        return reverse_lazy('gestion:utilisateur-detail-update', kwargs={'pk': self.object.pk})
+        return reverse_lazy('gestion:utilisateur-update', kwargs={'pk': self.object.pk})
 
     def get_form(self, form_class=None):
         if form_class is None:
