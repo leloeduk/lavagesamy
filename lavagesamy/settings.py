@@ -32,12 +32,8 @@ SECRET_KEY = 'django-insecure-mevowfb50v4&8%ftb+5+c1xv#+9j$_l%c!p7nuy_@dxj$##i$2
 # DEBUG = config('DEBUG', cast=bool)
 # ALLOWED_HOSTS = ["*"]
 
-DEBUG = True
+DEBUG = False
 
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost','lavagesamy.onrender.com','*']
 
