@@ -1,6 +1,6 @@
 # Lavage Samy Auto – Gestion des factures de lavage
 
-### ✅ Fonctionnalités principales :
+###  Fonctionnalités principales :
 - Enregistrement des services de lavage
 - Création et suivi des factures
 - Calcul des commissions laveurs
